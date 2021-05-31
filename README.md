@@ -23,7 +23,7 @@ my_subtitles.kor.ass
 
 ## Fixing a bad SAMI file
 
-`smi2ass` will not output anything if the conversion went OK. It prints the problematic SAMI fragment if it failed the conversion,
+`smi2ass` will output current file name working. If prints the problematic SAMI fragment if it failed the conversion,
 so you can find the location of the problem in your `.smi` file, fix it and run again:
 
 ```
