@@ -2,7 +2,7 @@
 
 `smi2ass` is a command-line tool that converts SAMI to SSA/ASS (SubStation Alpha).
 
-[Download the executable](https://github.com/trustin/smi2ass/releases) and run it with `.smi` file paths:
+[Download the executable](https://github.com/LinearAlpha/smi2ass/releases) and run it with `.smi` file paths:
 
 ```
 $ smi2ass my_subtitles.smi
