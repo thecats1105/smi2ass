@@ -1,0 +1,5 @@
+setuptools
+beautifulsoup4
+chardet
+nuitka
+patchelf

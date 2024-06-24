@@ -1,5 +1,10 @@
 # Build output
 /build
-/test_smis/*.ass
+*.ass
 __pycache__
 .vscode
+.venv
+
+# Temperate ignore
+*.ps1
+*.sh
