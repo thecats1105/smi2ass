@@ -4,14 +4,15 @@ import json
 # PIP installed modules
 import webcolors
 
-class AssStyle():
-    def __init__(self, setting_path: str = './setting/') -> None:
+
+class AssStyle:
+    def __init__(self, setting_path: str = "./setting/") -> None:
         """Reads setting JSON file form local drive and compose into ASS
         header blcok. Also, reads language code and color code setting from
         JSON file from local drive that can convert SMI to ASS style code.
 
         Args:
-            setting_path (str, optional): Path to where JSON files are located. 
+            setting_path (str, optional): Path to where JSON files are located.
             Defaults to './setting/'.
         """
 
@@ -20,14 +21,18 @@ class AssStyle():
 
         # Reading language code
         self.lan_code: dict[str, str] = load_setting(
-            'lan_code.json', self.root_path)
+            "lan_code.json", self.root_path
+        )
 
         # Reading ass style information
         self.ass_style: dict[str, any] = load_setting(
-            'ass_styles.json', self.root_path)
+            "ass_styles.json", self.root_path
+        )
 
         # Prepare even block of the ass header
-        self.ass_event: str = "[Events]\nFormat: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text"
+        self.ass_event: str = (
+            "[Events]\nFormat: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text"
+        )
 
     def __compse_info(self) -> str:
         """Composing "Script Info" block of ASS header in string
@@ -40,12 +45,12 @@ class AssStyle():
         tmp_dict: dict[str, any] = self.ass_style["ScriptInfo"]
 
         # Adding heading of info section
-        tmp_info: str = str(tmp_dict["Head"]) + '\n'
+        tmp_info: str = str(tmp_dict["Head"]) + "\n"
 
         # Adding message the info section
         if isinstance(tmp_dict["msg"], list):
             for tmp in tmp_dict["msg"]:
-                tmp_info += tmp + '\n'
+                tmp_info += tmp + "\n"
         else:
             tmp_info += tmp_dict["msg"] + "\n"
 
@@ -54,7 +59,7 @@ class AssStyle():
             if (tmp != "Head") and (tmp != "msg"):
                 tmp_info += f"{tmp}: {tmp_dict[tmp]}\n"
 
-        return tmp_info  # Back to home!! LOL
+        return tmp_info + "\n"  # Back to home!! LOL
 
     def __compose_styles(self) -> str:
         """Compose "Styles" block of AAS header in string
@@ -72,10 +77,10 @@ class AssStyle():
         # Instead of delecting used keys, just skip it
         for tmp in tmp_dict.keys():
             if tmp != "Head":
-                tmp_format += f'{tmp}, '
-                tmp_style += f'{tmp_dict[tmp]},'
+                tmp_format += f"{tmp}, "
+                tmp_style += f"{tmp_dict[tmp]},"
 
-        return f'{tmp_head}\n{tmp_format}\n{tmp_style}\n'
+        return f"{tmp_head}\n{tmp_format}\n{tmp_style}\n\n"
 
     def get_lang_code(self, tmp_lang_code: str) -> str:
         """Convert SMI language code to ASS language code
@@ -84,14 +89,17 @@ class AssStyle():
             tmp_lang_code (str): SMI language code in all upper case
 
         Returns:
-            str: Maching ASS language code. in case when language code is not 
+            str: Maching ASS language code. in case when language code is not
             exist, it will return "und" as unknown
         """
 
         try:
             return self.lan_code[tmp_lang_code]
         except:
-            print('Language code \"%s\" is not found, please add language code to \"%s\"' % (tmp_lang_code, 'lan_code.json'))
+            print(
+                'Language code "%s" is not found, please add language code to "%s"'
+                % (tmp_lang_code, "lan_code.json")
+            )
             return self.lan_code["UNKNOWNCC"]
 
     def color2hex(self, str_color: str) -> str:
@@ -137,8 +145,13 @@ class AssStyle():
         self.ass_style["style"]["Fontsize"] = size
 
     def compose_ass_header(self) -> str:
-        return self.__compse_info() + '\n' + self.__compose_styles() + \
-            '\n' + self.ass_event
+        """Composing ASS header that contains ASS style settings
+
+        Returns:
+            str: Composed ASS header in string format
+        """
+
+        return self.__compse_info() + self.__compose_styles() + self.ass_event
 
 
 def load_setting(fs_name: str, fs_path: str) -> dict[str, any]:
@@ -149,25 +162,29 @@ def load_setting(fs_name: str, fs_path: str) -> dict[str, any]:
         fs_path (str): Path to JSON file
 
     Returns:
-        dict[str, any]: Parsed JSON data from file 
+        dict[str, any]: Parsed JSON data from file
     """
 
     # Setting full path of JSON file to open
     file2open: str = fs_path + fs_name
-    with open(file2open, 'r') as f:
+    with open(file2open, "r") as f:
         return json.load(f)
 
 
-# Some test codes that used during development
-if __name__ == '__main__':
+def main() -> None:
     # Testing code for "compose_ass_style"
     tmp = AssStyle()
-    with open('./tmp_out.ass', 'w') as f:
+    with open("./tmp_out.ass", "w") as f:
         f.write(tmp.compose_ass_header())
 
     tmp.update_font_name("This is Test")
     tmp.update_font_size(100)
     tmp.update_title("Test title")
     tmp.update_res(12358, 1586897)
-    with open('./tmp_out2.ass', 'w') as f:
+    with open("./tmp_out2.ass", "w") as f:
         f.write(tmp.compose_ass_header())
+
+
+# Some test codes that used during development
+if __name__ == "__main__":
+    main()
