@@ -14,5 +14,6 @@
     "CNCC": "chi",
     "JPCC": "jpn",
     "UNKNOWNCC": "und",
+    "UNKNWN": "und",
     "COMMENTARY": "commentary"
 }
