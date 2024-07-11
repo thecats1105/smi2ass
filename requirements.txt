@@ -1,5 +1,7 @@
-setuptools
 beautifulsoup4
 chardet
+webcolors
+# To build project
+setuptools
 nuitka
-patchelf
+patchelf; os.name != 'nt' 
