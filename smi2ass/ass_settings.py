@@ -8,7 +8,7 @@ import webcolors
 class AssStyle:
     def __init__(self, setting_path: str = "./setting/") -> None:
         """Reads setting JSON file form local drive and compose into ASS
-        header blcok. Also, reads language code and color code setting from
+        header block. Also, reads language code and color code setting from
         JSON file from local drive that can convert SMI to ASS style code.
 
         Args:
@@ -54,7 +54,7 @@ class AssStyle:
         else:
             tmp_info += tmp_dict["msg"] + "\n"
 
-        # Instead of delecting used keys, just skip it
+        # Instead of deleting used keys, just skip it
         for tmp in tmp_dict.keys():
             if (tmp != "Head") and (tmp != "msg"):
                 tmp_info += f"{tmp}: {tmp_dict[tmp]}\n"
