@@ -1,0 +1,49 @@
+[project]
+name = "smi2ass"
+version = "1.2.1"
+description = "A simple smi2ass converter"
+requires-python = ">3.7"
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+]
+
+dependencies = ["beautifulsoup4", "chardet"]
+
+readme = "README.md"
+license = { file = "LICENSE" }
+
+[project.optional-dependencies]
+dev = ["nuitka", "patchelf"]
+
+[build-system]
+requires = ["setuptools>=42", "wheel", "nuitka", "toml"]
+build-backend = "nuitka.distutils.Build"
+
+# # Data files are to be handled by setuptools and not Nuitka
+# [tool.setuptools.package-data]
+# some_package = ['data_file.txt']
+
+[tool.nuitka]
+# These are not recommended, but they make it obvious to have effect.
+
+# boolean option, e.g. if you cared for C compilation commands, leading
+# dashes are omitted
+show-scons = true
+
+# options with single values, e.g. enable a plugin of Nuitka
+plugin-enable = ["pyside2"] # Add plugins if needed
+
+# options with several values, e.g. avoiding including modules, accepts
+# list argument.
+nofollow-import-to = ["*.tests", "*.distutils"]
+
+standalone = true # Generate a standalone executable
+onefile = false   # Generate a single-file executable
+
+[tool.scripts]
+your-script-name = "src.main:main"
+
+[tool.package]
+include = ["src"]
