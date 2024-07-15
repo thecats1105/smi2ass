@@ -185,7 +185,7 @@ class Smi2Ass(AssStyle):
             # temporarily hols smi line data in to tmp_lines, and data
             # structure is [smi lines, ass time code, time in ms]
             if time_code > 0:
-                ass_lang_code = self.get_lang_code(lang_tag[0])
+                ass_lang_code: str = self.get_lang_code(lang_tag[0].upper())
                 tmp_lines[ass_lang_code].append(
                     [lines, self.__ms2timestamp(time_code), time_code]
                 )
@@ -207,7 +207,7 @@ class Smi2Ass(AssStyle):
         # line_count structure: [lan code: str, percent: float]
         line_count: list[any] = []
         # First key from the dictionary, which has largest lines.
-        tmp_key = list(tmp_lines.keys())[0]
+        tmp_key: str = list(tmp_lines.keys())[0]
         for tmp_lang in tmp_lines.keys():
             tmp_len: int = len(tmp_lines[tmp_lang])
             line_count.append(
@@ -220,15 +220,25 @@ class Smi2Ass(AssStyle):
         I general, the main language has largest number of files. Thus, for
         this case, it is merging largest number of language.
         """
-        if any(tmp[2] < 0.1 for tmp in line_count) and len(line_count) == 2:
-            tmp_lines[line_count[0]].append(tmp_lines[line_count[1][::]])
-            del tmp_lines[line_count[1]]
+        # If there is only one language is detected, skip the merging process
+        if len(line_count) != 1:
+            for tmp in line_count:
+                tmp_key: str = tmp[0]
+                # If language is less then or equal to 10%, merge to largest
+                if tmp[2] <= 0.1:
+                    tmp_lines[line_count[0]] += tmp_lines[tmp_key]
+                    del tmp_lines[tmp_key]
 
-        if any(tmp[2] < 0.1 for tmp in line_count) and len(line_count) == 2:
-            self.smi_lines[line_count[0]].append(
-                self.smi_lines[line_count[1][:]]
-            )
-        del self.smi_lines[line_count[1]]
+            # Sort each language lines based on SMI timecode in millisecond
+            for key, value in tmp_lines:
+                # Sorting lines by SMI timecode
+                tmp_lines[key] = sorted(value, key=itemgetter(2))
+
+                # Only copy SMI line and ASS timecode
+                tmp_lines[key] = [tmp[:2] for tmp in tmp_lines[key]]
+
+        # Copy temperate value to the class values
+        self.smi_lines = tmp_lines
 
     def __core(self, lines) -> None:
         for i in range(len(lines)):
