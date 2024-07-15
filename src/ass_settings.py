@@ -94,7 +94,7 @@ class AssStyle:
         """
 
         try:
-            return self.lan_code[tmp_lang_code]
+            return self.lan_code[tmp_lang_code.upper()]
         except:
             print(
                 'Language code "%s" is not found, please add language code to "%s"'
