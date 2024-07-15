@@ -19,7 +19,10 @@
 #
 # Forked from: https://github.com/hojel/service.subtitles.gomtv/blob/3a7342961e140eaf8250659b0ac6158ce5e6bc5c/resources/lib
 
-import chardet, os, sys, re
+import chardet
+import os
+import sys
+import re
 from collections import defaultdict
 from operator import itemgetter
 from bs4 import BeautifulSoup
@@ -32,18 +35,20 @@ if major == 3 and minor >= 7:
 elif major == 3 and minor < 7:
     from html.parser import HTMLParser
 else:
-    print ('version 3.x needed') 
+    print('version 3.x needed')
 
 default_font_name = 'Malgun Gothic'
 
 # lang class for multiple language subtitle
-langCode = {'KRCC':'kor','KOCC':'kor','KR':'kor','KO':'kor','KOREANSC':'kor','KRC':'kor',
-            'ENCC':'eng','EGCC':'eng','EN':'eng','EnglishSC':'eng','ENUSCC':'eng','ERCC':'eng',
-            'CNCC':'chi','JPCC':'jpn','UNKNOWNCC':'und','COMMENTARY':'commentary'
-            }
+langCode = {
+    'KRCC': 'kor', 'KOCC': 'kor', 'KR': 'kor', 'KO': 'kor', 'KOREANSC': 'kor',
+    'KRC': 'kor', 'ENCC': 'eng', 'EGCC': 'eng', 'EN': 'eng', 'EnglishSC': 'eng',
+    'ENUSCC': 'eng', 'ERCC': 'eng', 'CNCC': 'chi', 'JPCC': 'jpn',
+    'UNKNOWNCC': 'und', 'COMMENTARY': 'commentary'
+}
 
 script_info =\
-"""[Script Info]
+    """[Script Info]
 ;This is an Advanced Sub Station Alpha v4+ script.
 ;Converted by smi2ass
 Title: 0
@@ -57,16 +62,16 @@ Timer: 100.0000
 
 """
 
-styles=\
-"""
+styles =\
+    """
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Default,""" + default_font_name + """,64,&H00FFFFFF,&H0000FFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,0,2,12,12,30,1
 
 """
 
-events=\
-"""
+events =\
+    """
 [Events]
 Format: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text
 """
@@ -225,7 +230,8 @@ css3_names_to_hex = {
 
 space_chars = [
     u'\u00A0', u'\u180E', u'\u2000', u'\u2001', u'\u2002', u'\u2003', u'\u2004', u'\u2005', u'\u2006',
-    u'\u2007', u'\u2008', u'\u2009', u'\u200A', u'\u200B', u'\u202F', u'\u205F', u'\u3000' ]
+    u'\u2007', u'\u2008', u'\u2009', u'\u200A', u'\u200B', u'\u202F', u'\u205F', u'\u3000']
+
 
 def smi2ass(smi_sgml):
     # CRLF, LF or tab to a whitespace
@@ -235,53 +241,62 @@ def smi2ass(smi_sgml):
     smi_sgml = smi_sgml.replace('\t', ' ')
 
     # Close the <sync> tags to avoid tag recursion.
-    smi_sgml = re.sub(r'</ *[Ss][Yy][Nn][Cc] *>', '', smi_sgml) # Remove </sync>
-    smi_sgml = re.sub(r'< *[Ss][Yy][Nn][Cc] +', '</sync><sync ', smi_sgml) # Add </sync> right before <sync>
-    
+    smi_sgml = re.sub(r'</ *[Ss][Yy][Nn][Cc] *>',
+                      '', smi_sgml)  # Remove </sync>
+    # Add </sync> right before <sync>
+    smi_sgml = re.sub(r'< *[Ss][Yy][Nn][Cc] +', '</sync><sync ', smi_sgml)
+
     # Replace special space characters so that BeautifulSoup can't remove them.
     for spaceChar in space_chars:
-        smi_sgml = smi_sgml.replace(spaceChar, 'smi2ass_unicode(' + str(ord(spaceChar)) + ')')
+        smi_sgml: str = smi_sgml.replace(
+            spaceChar, 'smi2ass_unicode(' + str(ord(spaceChar)) + ')')
 
     # Replace spaces around a tag with '&nbsp;' so that they are not stripped when we replace a tag.
     smi_sgml = re.sub(r'> +<', '>smi2ass_unicode(32)<', smi_sgml)
     smi_sgml = re.sub(r'> +', '>smi2ass_unicode(32)', smi_sgml)
     smi_sgml = re.sub(r' +<', 'smi2ass_unicode(32)<', smi_sgml)
     # but not <rt> tags
-    smi_sgml = re.sub(r'< *[Rr][Tt] *>(smi2ass_unicode\([0-9]+\))+', '<rt>', smi_sgml)
-    smi_sgml = re.sub(r'(smi2ass_unicode\([0-9]+\))+</ *[Rr][Tt] *>', '</rt>', smi_sgml)
+    smi_sgml = re.sub(
+        r'< *[Rr][Tt] *>(smi2ass_unicode\([0-9]+\))+', '<rt>', smi_sgml)
+    smi_sgml = re.sub(
+        r'(smi2ass_unicode\([0-9]+\))+</ *[Rr][Tt] *>', '</rt>', smi_sgml)
 
-    #Parse lines with BeautifulSoup based on sync tag
+    # Parse lines with BeautifulSoup based on sync tag
     soup = BeautifulSoup(smi_sgml, 'html.parser')
     smi_lines = soup.find_all('sync')
 
-    #separate multi-language subtitle into a sperate list
+    # separate multi-language subtitle into a sperate list
     mln, longlang = separate_by_lang(smi_lines)
     ass_dict = {}
     for lang_idx, lang in enumerate(mln):
-        ass_lines = smi2ass_internal (mln[lang])
+        ass_lines = smi2ass_internal(mln[lang])
         if len(ass_lines) > 0:
-            asscontents = (script_info+styles+events+''.join(ass_lines)).encode('utf-8')
-            ass_dict[longlang[lang_idx]] = asscontents
+            asscontents: bytes = (script_info+styles +
+                                  events+''.join(ass_lines)).encode('utf-8')
+            ass_dict[longlang[lang_idx]]P = asscontents
 
     return ass_dict
 
-def smi2ass_internal (sln):
+
+def smi2ass_internal(sln):
     global minor
     ass_lines = []
     for line_idx, item in enumerate(sln):
-        try: # bad cases : '<SYNC .','<SYNC Start=479501??>'
+        try:  # bad cases : '<SYNC .','<SYNC Start=479501??>'
             li = sln[line_idx]['start']
             li1 = sln[line_idx+1]['start']
-        except :
-            #print(ml[lang][line_idx])
+        except:
+            # print(ml[lang][line_idx])
             li = None
             li1 = None
 
         if line_idx + 1 < len(sln) and not li == None and not li1 == None:
             tcstart = ms2timecode(int(re.sub(r'\..*$', '', item['start'])))
-            tcend = ms2timecode(int(re.sub(r'\..*$', '', sln[line_idx+1]['start'])))
+            tcend = ms2timecode(
+                int(re.sub(r'\..*$', '', sln[line_idx+1]['start'])))
 
-            p_tags = item.find('p')# <SYNC Start=41991><P Class=KRCC><SYNC Start=43792><P Class=KRCC>
+            # <SYNC Start=41991><P Class=KRCC><SYNC Start=43792><P Class=KRCC>
+            p_tags = item.find('p')
             if not p_tags:
                 continue
 
@@ -324,32 +339,40 @@ def smi2ass_internal (sln):
             ruby_tags = p_tags.find_all('rt')
             for rt in ruby_tags:
                 if len(rt.text) != 0:
-                    rt_re = '{\\fscx50}{\\fscy50}&nbsp;'+rt.text+'&nbsp;{\\fscx100}{\\fscy100}'
+                    rt_re = '{\\fscx50}{\\fscy50}&nbsp;' + \
+                        rt.text+'&nbsp;{\\fscx100}{\\fscy100}'
                     rt.replaceWith(rt_re)
                 else:
                     rt.extract()
 
             colors = p_tags.find_all('font')
             for color in colors:
-                try: # bad cases : '<font size=30>'
+                try:  # bad cases : '<font size=30>'
                     col = color['color']
                 except:
                     col = None
                 if not col == None:
-                    hexcolor = re.search('[0-9a-fA-F]{6}',color['color'].lower()) # bad cases : '23df34'
+                    # bad cases : '23df34'
+                    hexcolor = re.search(
+                        '[0-9a-fA-F]{6}', color['color'].lower())
                     if hexcolor is not None:
-                        converted_color = '{\\c&H' + rgb2bgr(hexcolor.group(0)[::]) +'&}' + color.text + '{\\c}'
+                        converted_color = '{\\c&H' + rgb2bgr(
+                            hexcolor.group(0)[::]) + '&}' + color.text + '{\\c}'
                     else:
                         try:
-                            hexConvert = rgb2bgr(css3_names_to_hex[color['color'].lower()][::].replace('#',''))
-                            converted_color = '{\\c&H' + hexConvert + '&}' + color.text + '{\\c}'
-                        except: # bad cases : 'skybule'
+                            hexConvert = rgb2bgr(
+                                css3_names_to_hex[color['color'].lower()][::].replace('#', ''))
+                            converted_color = '{\\c&H' + \
+                                hexConvert + '&}' + color.text + '{\\c}'
+                        except:  # bad cases : 'skybule'
                             converted_color = color.text
-                            print('Failed to convert a color name: %s' % color['color'].lower())
+                            print('Failed to convert a color name: %s' %
+                                  color['color'].lower())
                     color.replaceWith(converted_color)
 
             contents = p_tags.text
-            contents = re.sub(r'smi2ass_unicode\(([0-9]+)\)', r'&#\1;', contents)
+            contents = re.sub(
+                r'smi2ass_unicode\(([0-9]+)\)', r'&#\1;', contents)
             if minor >= 7:
                 contents = html.unescape(contents)
             else:
@@ -357,9 +380,11 @@ def smi2ass_internal (sln):
                 contents = parser.unescape(contents)
 
             if len(contents.strip()) != 0:
-                line = 'Dialogue: 0,%s,%s,Default,,0000,0000,0000,,%s\n' % (tcstart,tcend, contents)
+                line = 'Dialogue: 0,%s,%s,Default,,0000,0000,0000,,%s\n' % (
+                    tcstart, tcend, contents)
                 ass_lines.append(line)
     return ass_lines
+
 
 def ms2timecode(ms):
     hours = int(ms / 3600000)
@@ -372,13 +397,14 @@ def ms2timecode(ms):
     timecode = '%01d:%02d:%02d.%02d' % (hours, minutes, seconds, ms)
     return timecode
 
+
 def separate_by_lang(smi_lines):
-    #prepare multilanguage dict with languages separated list
+    # prepare multilanguage dict with languages separated list
     multiLanguageDict = defaultdict(list)
 
-    #loop for number of smi subtitle lines
+    # loop for number of smi subtitle lines
     for line_idx, subtitleLine in enumerate(smi_lines):
-        #get time code from start tag
+        # get time code from start tag
         try:
             timeCode = int(re.sub(r'\..*$', '', subtitleLine['start']))
             if timeCode < 0:
@@ -386,7 +412,7 @@ def separate_by_lang(smi_lines):
         except:
             print('Failed to extract time code: %s' % subtitleLine)
 
-        #get language name from p tag
+        # get language name from p tag
         try:
             languageTag = subtitleLine.find('p')['class']
         except:
@@ -395,11 +421,13 @@ def separate_by_lang(smi_lines):
         # seperate langs depending on p class (language tag)
         # put smiLine,  Line Index, and time code into list (ml is dictionary (key is language name from p tag) with lists)
         try:
-            multiLanguageDict[languageTag[0]].append([subtitleLine,line_idx,timeCode])
-        except: # bad cases : '<SYNC Start=7630><P>'
-            try: # if no p class name, add unknown as language tag and handle later
-                #languageTag = smi_lines[line_idx-1].find('p')['class']
-                multiLanguageDict['unknown'].append([subtitleLine,line_idx,timeCode])
+            multiLanguageDict[languageTag[0]].append(
+                [subtitleLine, line_idx, timeCode])
+        except:  # bad cases : '<SYNC Start=7630><P>'
+            try:  # if no p class name, add unknown as language tag and handle later
+                # languageTag = smi_lines[line_idx-1].find('p')['class']
+                multiLanguageDict['unknown'].append(
+                    [subtitleLine, line_idx, timeCode])
             except:
                 pass
 
@@ -410,29 +438,30 @@ def separate_by_lang(smi_lines):
 
     # get number of lines for each langauge and sort with number of lines
     langcodes = multiLanguageDict.keys()
-    langcount=[]
-    for lang in langcodes:
+    langcount = []
+    for lang in langcodaes:
         langcount.append([lang, len(multiLanguageDict[lang])])
     langcount = sorted(langcount, key=itemgetter(1))
 
     # calculate % of each language from largest, put it in langcount
     languageTagCheckFlag = 0
     for index, lang in enumerate(langcount):
-        portion = float(len(multiLanguageDict[lang[0]]))/float(langcount[len(langcount)-1][1])
-        langcount[index].insert(2,float(len(multiLanguageDict[lang[0]]))/float(langcount[len(langcount)-1][1]))
+        portion = float(
+            len(multiLanguageDict[lang[0]])) / float(langcount[len(langcount)-1][1])
+        langcount[index].insert(2, float(len(multiLanguageDict[lang[0]])) / float(langcount[len(langcount)-1][1]))
         try:
             langName = langCode[langcount[index][0].upper()]
             langCnvt = 1
         except:
             langName = langcount[index][0].upper()
             langCnvt = 0
-        langcount[index].insert(3,langName)
-        langcount[index].insert(4,langCnvt)
+        langcount[index].insert(3, langName)
+        langcount[index].insert(4, langCnvt)
         if portion < 0.1:
-            langcount[index].insert(5,1)
-            languageTagCheckFlag = languageTagCheckFlag +1
+            langcount[index].insert(5, 1)
+            languageTagCheckFlag = languageTagCheckFlag + 1
         else:
-            langcount[index].insert(5,0)
+            langcount[index].insert(5, 0)
 
     # if there is a language with less than 10%, only two language exist than combine them
     if languageTagCheckFlag > 0 and len(langcount) == 2:
@@ -442,12 +471,12 @@ def separate_by_lang(smi_lines):
         del multiLanguageDict[langcount[0][0]]
 
     # covert to real language name and merge to largest
-    elif languageTagCheckFlag > 1 :
+    elif languageTagCheckFlag > 1:
         for index, langc in enumerate(langcount):
-            if langc[5] == 1 and langc[4] == 1: # less than 10% and coverted to real lang name
+            if langc[5] == 1 and langc[4] == 1:  # less than 10% and coverted to real lang name
                 toBeMergedLangName = langc[3]
                 # find largest one with same language name
-                for lg in range(len(langcount)-1,0, -1):
+                for lg in range(len(langcount)-1, 0, -1):
                     if langcount[lg][3] == toBeMergedLangName:
                         largestSameName = lg
                         break
@@ -460,18 +489,18 @@ def separate_by_lang(smi_lines):
             elif langc[5] == 1 and langc[4] == 0:
                 del multiLanguageDict[langcount[index][0]]
 
-    #good to sort based on timecode before processing
+    # good to sort based on timecode before processing
     multiLanguageDictSorted = defaultdict(list)
     for lng in multiLanguageDict:
         temp_ml = sorted(multiLanguageDict[lng], key=itemgetter(2))
         for te in temp_ml:
             multiLanguageDictSorted[lng].append(te[0])
 
-    #covert p tag language to long language name for ASS file name
-    longlang=[]
+    # covert p tag language to long language name for ASS file name
+    longlang = []
     for lang in multiLanguageDictSorted:
-        if len(multiLanguageDictSorted)>1:
-            try :
+        if len(multiLanguageDictSorted) > 1:
+            try:
                 if langCode[lang.upper()] in longlang:
                     longlang.append(lang)
                 else:
@@ -482,20 +511,22 @@ def separate_by_lang(smi_lines):
             longlang.append('')
     return multiLanguageDictSorted, longlang
 
+
 def rgb2bgr(rgb):
     # Converting RGB based color code to BGR color code.
     # Based on the ASS documentation, ASS useses BGR
     return rgb[4:6] + rgb[2:4] + rgb[0:2]
+
 
 for smi_path in sys.argv[1:]:
     # Print what file is currently working on
     print(smi_path)
     # Open as binary and detect the encoding.
     smi_file = open(smi_path, 'rb')
-    smi_encoding = chardet.detect(smi_file.read())['encoding']
+    smi_encoding: str | None = chardet.detect(smi_file.read())['encoding']
     smi_file.close()
 
-    smi_file = open(smi_path, 'r', encoding = smi_encoding, errors = 'replace')
+    smi_file = open(smi_path, 'r', encoding=smi_encoding, errors='replace')
     smi_sgml = smi_file.read()
     smi_file.close()
     ass_dict = smi2ass(smi_sgml)
