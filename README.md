@@ -33,8 +33,11 @@ Failed to extract time code: <sync star=1234>
 
 ## Credits
 
-The conversion script was initially forked from https://github.com/hojel/service.subtitles.gomtv/tree/3a7342961e140eaf8250659b0ac6158ce5e6bc5c/resources/lib and https://github.com/trustin/smi2ass/tree/v0.1.1. Since then, [@LinearAlpha](https://github.com/LinearAlpha) made the following changes:
+The conversion script was initially forked from [service.subtitles.gomtv](https://github.com/hojel/service.subtitles.gomtv/tree/3a7342961e140eaf8250659b0ac6158ce5e6bc5c/resources/lib) and [smi2ass](https://github.com/trustin/smi2ass/tree/v0.1.1)
 
+Since then, [@LinearAlpha](https://github.com/LinearAlpha) made the following changes:
 - Fixed color conversion problem (RGB -> BGR)
-- Add and texted for arm based system (Raspberry Pi)
+- Rewrite code by using classes (OPP style)
 - Updated Python from 3.6.X to 3.8.X
+- Convert ASS setting into JSON file so user can easily modify if it needed
+- Added a class called "AssStyle" so user can update font name, font size, title, and video resolution from the command line or simply calling setter method
