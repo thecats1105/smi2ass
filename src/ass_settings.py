@@ -34,7 +34,7 @@ class AssStyle:
             "[Events]\nFormat: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text"
         )
 
-    def __compse_info(self) -> str:
+    def __compose_info(self) -> str:
         """Composing "Script Info" block of ASS header in string
 
         Returns:
@@ -74,7 +74,7 @@ class AssStyle:
         tmp_format: str = "Format: "
         tmp_style: str = "Style: "
 
-        # Instead of delecting used keys, just skip it
+        # Instead of deleting used keys, just skip it
         for tmp in tmp_dict.keys():
             if tmp != "Head":
                 tmp_format += f"{tmp}, "
@@ -89,7 +89,7 @@ class AssStyle:
             tmp_lang_code (str): SMI language code in all upper case
 
         Returns:
-            str: Maching ASS language code. in case when language code is not
+            str: Matching ASS language code. in case when language code is not
             exist, it will return "und" as unknown
         """
 
@@ -109,14 +109,14 @@ class AssStyle:
         """Update title value in the Script Info block
 
         Args:
-            title (str): Video fiel that what to add to Sctipt Info block
+            title (str): Name of Video file that where subtitle will be used
         """
 
         self.ass_style["ScriptInfo"]["Title"] = title
 
     def update_res(self, res_x: int, res_y: int) -> None:
-        """To update resoluation information of the video. It is default to
-        FullHD (1980 x 1080) resulution in the json file
+        """To update resolution information of the video. It is default to
+        FullHD (1980 x 1080) resolution in the json file
 
         Args:
             res_x (int): Horizontal size of the screen
@@ -151,7 +151,7 @@ class AssStyle:
             str: Composed ASS header in string format
         """
 
-        return self.__compse_info() + self.__compose_styles() + self.ass_event
+        return self.__compose_info() + self.__compose_styles() + self.ass_event
 
 
 def load_setting(fs_name: str, fs_path: str) -> dict[str, any]:
@@ -171,6 +171,7 @@ def load_setting(fs_name: str, fs_path: str) -> dict[str, any]:
         return json.load(f)
 
 
+# Testing code for the class
 def main() -> None:
     # Testing code for "compose_ass_style"
     tmp = AssStyle()

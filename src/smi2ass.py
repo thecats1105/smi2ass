@@ -151,7 +151,7 @@ class Smi2Ass(AssStyle):
 
     def __time_lan(self) -> None:
         tmp_lines: dict[str, list[any]] = defaultdict(list)
-        time_code: int             # Prepare valuable to hold time in ms.
+        time_code: int  # Prepare valuable to hold time in ms.
 
         # Set for timecode and separate out each language
         for lines in self.smi_sgml_bs:
@@ -171,6 +171,7 @@ class Smi2Ass(AssStyle):
                 time_code = -1
                 print(f"Failed to extract time code: {lines}")
 
+            # Language separation is depends on p class tag (<P Class= >)
             # Get language name from <P Class= > tag
             try:
                 lang_tag: list[str] = lines.find("p")["class"]
@@ -178,13 +179,22 @@ class Smi2Ass(AssStyle):
                 # If no p class, it will set to unknown language
                 lang_tag = ["UNKNOWNCC"]
                 print(f"Failed to extract language class: {lines}")
+                print('Language has been set to "UNKNOWNCC"')
 
-            # Language separation is depends on p class tag (<P Class= >)
-            # As using language code as key in the dictionary
+            # The key of the dictionary is language code in ass.
+            # temporarily hols smi line data in to tmp_lines, and data
+            # structure is [smi lines, ass time code, time in ms]
             if time_code > 0:
-                self.smi_lines[self.get_lang_code(lang_tag[0])].append(
-                    [lines, self.__ms2timestamp(time_code)]
+                ass_lang_code = self.get_lang_code(lang_tag[0])
+                tmp_lines[ass_lang_code].append(
+                    [lines, self.__ms2timestamp(time_code), time_code]
                 )
+
+        # Sort the dictionary by the length of the list associated with
+        # each key
+        tmp_lines = dict(
+            sorted(tmp_lines.items(), key=lambda item: len(item[1]))
+        )
 
         """
         check whether proper multiple language subtitle
@@ -192,24 +202,29 @@ class Smi2Ass(AssStyle):
         it is likely that misuse of class name
         so combine or get rid of them
         """
-        # line_count structure:
-        # [lan code: str, lang lines: int, percent: float, %<10 flag: bool]
+        # Prepare list to hold language code and present of language compare
+        # with largest language.
+        # line_count structure: [lan code: str, percent: float]
         line_count: list[any] = []
-        for tmp_lang in self.smi_lines.keys():
-            line_count.append([tmp_lang, len(self.smi_lines[tmp_lang])])
-        line_count.sort(key=itemgetter(1))
-
-        # Calculate % of each language from largest
-        for i, tmp_lang in enumerate(line_count):
-            line_count[i].insert(2, tmp_lang[1] / line_count[0][1])
+        # First key from the dictionary, which has largest lines.
+        tmp_key = list(tmp_lines.keys())[0]
+        for tmp_lang in tmp_lines.keys():
+            tmp_len: int = len(tmp_lines[tmp_lang])
+            line_count.append(
+                [tmp_lang, tmp_len, tmp_len / len(tmp_lines[tmp_key])]
+            )
 
         """
         If there s a language with less than 10%, only two language exist than 
         combine them.
-        I general, the main language is written first, in this case, it will 
-        merged to first language.
+        I general, the main language has largest number of files. Thus, for
+        this case, it is merging largest number of language.
         """
-        if any(line_count[:][2]) <= 0.1 and len(line_count) == 2:
+        if any(tmp[2] < 0.1 for tmp in line_count) and len(line_count) == 2:
+            tmp_lines[line_count[0]].append(tmp_lines[line_count[1][::]])
+            del tmp_lines[line_count[1]]
+
+        if any(tmp[2] < 0.1 for tmp in line_count) and len(line_count) == 2:
             self.smi_lines[line_count[0]].append(
                 self.smi_lines[line_count[1][:]]
             )
@@ -239,7 +254,7 @@ class Smi2Ass(AssStyle):
 
         self.__preprocess(smi_path)
 
-    def to_ass(self, smi_path: str):
+    def to_ass(self, smi_path: str = ""):
         pass
 
     def save(self, output_path: str):
@@ -250,8 +265,10 @@ if __name__ == "__main__":
     # Custom made modules
     from ass_settings import AssStyle
 
-    tmp_smi: Smi2Ass = Smi2Ass()
-    tmp_smi.to_ass("./test_smis/Psycho-Pass - S01E15.smi")
+    tmp_smi: Smi2Ass = Smi2Ass("./test_smis/Psycho-Pass - S01E15.smi")
+    # tmp_smi.to_ass("./test_smis/Psycho-Pass - S01E15.smi")
+
+    print("Hello")
 
     tmp_lines = tmp_smi.smi_sgml_bs
     print(tmp_lines)
