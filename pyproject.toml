@@ -15,7 +15,8 @@ readme = "README.md"
 license = { file = "LICENSE" }
 
 [project.optional-dependencies]
-dev = ["nuitka", "patchelf"]
+dev_win = ["nuitka"]
+dev_linux = ["nuitka", "patchelf"]
 
 [build-system]
 requires = ["setuptools>=42", "wheel", "nuitka", "toml"]
