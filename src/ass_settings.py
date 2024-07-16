@@ -144,7 +144,7 @@ class AssStyle:
 
         self.ass_style["style"]["Fontsize"] = size
 
-    def compose_ass_header(self) -> str:
+    def ass_header(self) -> str:
         """Composing ASS header that contains ASS style settings
 
         Returns:
@@ -176,14 +176,14 @@ def main() -> None:
     # Testing code for "compose_ass_style"
     tmp = AssStyle()
     with open("./tmp_out.ass", "w") as f:
-        f.write(tmp.compose_ass_header())
+        f.write(tmp.ass_header())
 
     tmp.update_font_name("This is Test")
     tmp.update_font_size(100)
     tmp.update_title("Test title")
     tmp.update_res(12358, 1586897)
     with open("./tmp_out2.ass", "w") as f:
-        f.write(tmp.compose_ass_header())
+        f.write(tmp.ass_header())
 
 
 # Some test codes that used during development
