@@ -24,6 +24,7 @@ class Smi2Ass(AssStyle):
         # Initializing parent class
         super().__init__(**kwargs)
 
+        self.path2smi: str  # Path to SMI file
         self.smi_sgml: str
         self.smi_sgml_bs: ResultSet
         # Prepare the value hold smi lines by each language. The langue code
@@ -39,6 +40,9 @@ class Smi2Ass(AssStyle):
             self.__preprocess(smi_path)
 
     def __preprocess(self, smi_path: str) -> None:
+
+        self.path2smi = smi_path  # Saving input path
+
         # Check if file is accessible. If it is not, program will raise error.
         try:
             # Identify encoding of the file
