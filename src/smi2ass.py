@@ -248,8 +248,9 @@ class Smi2Ass(AssStyle):
             if len(tmp_lines) != 1:
                 tmp_lines[key] = sorted(value, key=itemgetter(2))
 
-            # # Only copy SMI line and ASS timecode
-            tmp_lines[key] = [tmp[:2] for tmp in value]
+            # Appears need to save millisecond timecode for the very last list
+            # # # Only copy SMI line and ASS timecode
+            # tmp_lines[key] = [tmp[:2] for tmp in value]
 
         # Copy temperate value to the class values
         self.smi_lines = tmp_lines
