@@ -62,13 +62,16 @@ class Smi2Ass(AssStyle):
             self.smi_sgml, "html.parser"
         ).find_all("sync")
 
+        # Get timecode for each lines and septate out subtitle in each language
         self.__time_lan()
 
     def __convert_whitespace(self) -> None:
         # CRLF, LF or TAB to white space.
         # Some subtitle uses TAB as space character
-        # whitespace = [u'\u000D\u000A', u'\u000A', u'\u000D', '\t']
         whitespace: list[str] = ["\u000D\u000A", "\u000A", "\u000D"]
+
+        # # Special case for "\t" character
+        # self.smi_sgml.replace("\t", "    ")
 
         for temp in whitespace:
             self.smi_sgml.replace(temp, " ")
@@ -229,13 +232,14 @@ class Smi2Ass(AssStyle):
                     tmp_lines[line_count[0]] += tmp_lines[tmp_key]
                     del tmp_lines[tmp_key]
 
-            # Sort each language lines based on SMI timecode in millisecond
-            for key, value in tmp_lines:
-                # Sorting lines by SMI timecode
+        # Sort each language lines based on SMI timecode in millisecond
+        for key, value in tmp_lines.items():
+            # Sorting lines by SMI timecode only more then one language
+            if len(tmp_lines) != 1:
                 tmp_lines[key] = sorted(value, key=itemgetter(2))
 
-                # Only copy SMI line and ASS timecode
-                tmp_lines[key] = [tmp[:2] for tmp in tmp_lines[key]]
+            # # Only copy SMI line and ASS timecode
+            tmp_lines[key] = [tmp[:2] for tmp in value]
 
         # Copy temperate value to the class values
         self.smi_lines = tmp_lines
@@ -271,16 +275,15 @@ class Smi2Ass(AssStyle):
         pass
 
 
-if __name__ == "__main__":
+def main() -> None:
     # Custom made modules
     from ass_settings import AssStyle
 
     tmp_smi: Smi2Ass = Smi2Ass("./test_smis/Psycho-Pass - S01E15.smi")
-    # tmp_smi.to_ass("./test_smis/Psycho-Pass - S01E15.smi")
+    tmp = tmp_smi.smi_lines
+    print("hello")
+    print(tmp)
 
-    print("Hello")
 
-    tmp_lines = tmp_smi.smi_sgml_bs
-    print(tmp_lines)
-    tmp_lines = tmp_smi.smi_lines
-    print(tmp_lines)
+if __name__ == "__main__":
+    main()
