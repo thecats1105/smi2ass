@@ -72,6 +72,9 @@ class Smi2Ass(AssStyle):
         # Get timecode for each lines and septate out subtitle in each language
         self.__time_lan()
 
+        # Preprocess is complete, not it can convert to ass
+        self.flag_preprocess = True
+
     def __convert_whitespace(self) -> None:
         # CRLF, LF or TAB to white space.
         # Some subtitle uses TAB as space character
@@ -275,8 +278,22 @@ class Smi2Ass(AssStyle):
 
         self.__preprocess(smi_path)
 
-    def to_ass(self, smi_path: str = ""):
-        pass
+    def to_ass(self, smi_path: str = "") -> None:
+        # If there is path input then update to new SMI file
+        if smi_path != "":
+            self.update_file2conv(smi_path)
+
+        # If class was not initialized print error message.
+        if not self.flag_preprocess:
+            print("Initialization  process is not complete")
+            print(
+                'Please Initialize class by calling "update_file2conv" method'
+            )
+        else:
+            for key, value in self.smi_lines.items():
+                self.ass_lines[key] = self.__core(value)
+                # self.ass_lines[key].append(self.ass_header())
+                # self.ass_lines[key] += self.__core(value)
 
     def save(self, output_path: str):
         pass
