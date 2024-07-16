@@ -27,13 +27,16 @@ class Smi2Ass(AssStyle):
         self.path2smi: str  # Path to SMI file
         self.smi_sgml: str
         self.smi_sgml_bs: ResultSet
-        # Prepare the value hold smi lines by each language. The langue code
+        # The value that  hold smi lines by each language. The language code
         # is used as key of the dictionary.
-        # Each dictionary key is holding list as
-        # [index, lines, time code]
+        # Each dictionary key is holding list as [lines, time code in ass]
         self.smi_lines: dict[str, list[any]] = defaultdict(list)
-        # self.ass_lines: list[str]
-        self.ass_lines: str
+        # The value that holds converted lines from SMI subtitle. The language
+        # will be used as key of the dictionary.
+        # Each key will hold list as [lines of ass formatted subtitle]
+        self.ass_lines: dict[str, list[str]] = defaultdict(list)
+        # Flag initialization process is complete before converting to ASS
+        self.flag_preprocess: bool = False
 
         # Only initialize the class when SMI file path is provided
         if smi_path != "":
