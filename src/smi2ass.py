@@ -278,7 +278,6 @@ class Smi2Ass(AssStyle):
     def save(self, output_path: str):
         pass
 
-
 def main() -> None:
     # Custom made modules
     from ass_settings import AssStyle
