@@ -297,16 +297,3 @@ class Smi2Ass(AssStyle):
 
     def save(self, output_path: str):
         pass
-
-def main() -> None:
-    # Custom made modules
-    from ass_settings import AssStyle
-
-    tmp_smi: Smi2Ass = Smi2Ass("./test_smis/Psycho-Pass - S01E15.smi")
-    tmp = tmp_smi.smi_lines
-    print("hello")
-    print(tmp)
-
-
-if __name__ == "__main__":
-    main()
