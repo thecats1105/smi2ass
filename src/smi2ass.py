@@ -254,17 +254,55 @@ class Smi2Ass(AssStyle):
         # Copy temperate value to the class values
         self.smi_lines = tmp_lines
 
-    def __core(self, lines) -> None:
-        for i in range(len(lines)):
-            tmp_line = lines[i][1]
+    def __tag_conv(self, tags: list[any], conv_rule: str) -> None:
+        for tmp_tag in tags:
+            if len(tmp_tag.text) != 0:
+                tmp_tag.replaceWith(conv_rule % tmp_tag.text)
+            else:
+                tmp_tag.extract()
 
-            # Current time code
-            ass_time_1: str = lines[i][2]
-            # Next time code, if it is last item, then add 1s from current
-            ass_time_2: str = (
-                self.__ms2timestamp(int(lines["start"]) + 1000)
-                if i == len(lines) - 1
-                else lines[i + 1][2]
+    def __core(self, lines2conv: list[list[any]]) -> list[str]:
+        # Setting first item to be ASS style header
+        tmp_ass_lines: list[str] = [self.ass_header()]
+
+        for i in range(len(lines2conv)):
+            # Getting current line of SMI
+            tmp_line: bs = lines2conv[i][0]
+
+            # Setting converted timecode
+            timcode_1: str = lines2conv[i][1]  # Start of subtitle
+
+            # Setting end time code
+            try:
+                timecode_2: str = lines2conv[i + 1][1]  # End of subtitles
+            except:
+                """
+                Due to how the SMI subtitle is structure, there isn't
+                indication for end time for the line. Thus, adding 1s to the
+                last time code, os it cant convert without error
+                """
+                timecode_2: str = self.__ms2timestamp(lines2conv[i][2] + 1000)
+
+            # Converting next line (br) tags
+            for tmp_br in tmp_line.find_all("br"):
+                tmp_br.replaceWith("\\n")
+
+            # Convert bold (b) tags
+            self.__tag_conv(tmp_line.find_all("b"), "{\\b1}%s{\\b0}")
+
+            # Convert italics (i) tag
+            self.__tag_conv(tmp_line.find_all("i"), "{\\i1}%s{\\i0}")
+
+            # Convert underline (u) tag
+            self.__tag_conv(tmp_line.find_all("u"), "{\\u1}%s{\\u0}")
+
+            # Convert strikes (s) tag
+            self.__tag_conv(tmp_line.find_all("s"), "{\\s1}%s{\\s0}")
+
+            # Convert ruby (rt) tag
+            self.__tag_conv(
+                tmp_line.find_all("s"),
+                "{\\fscx50}{\\fscy50}&nbsp;%s&nbsp;{\\fscx100}{\\fscy100}",
             )
 
             p_tags = tmp_line.find_all("p")
