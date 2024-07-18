@@ -6,7 +6,8 @@ from typing import Dict
 
 # PIP installed modules
 import chardet
-from bs4 import BeautifulSoup, ResultSet
+from bs4 import BeautifulSoup as bs
+from bs4 import ResultSet
 
 # Custom modules
 from ass_settings import AssStyle
@@ -65,9 +66,7 @@ class Smi2Ass(AssStyle):
         self.__add_sync_tag()
 
         # Parse SMI with BeautifulSoup with HTML parser
-        self.smi_sgml_bs = BeautifulSoup(
-            self.smi_sgml, "html.parser"
-        ).find_all("sync")
+        self.smi_sgml_bs = bs(self.smi_sgml, "html.parser").find_all("sync")
 
         # Get timecode for each lines and septate out subtitle in each language
         self.__time_lan()
