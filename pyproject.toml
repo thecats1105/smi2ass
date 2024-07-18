@@ -44,7 +44,7 @@ standalone = true # Generate a standalone executable
 onefile = false   # Generate a single-file executable
 
 [tool.scripts]
-your-script-name = "src.main:main"
+smi2ass = "src.main:main"
 
 [tool.package]
 include = ["src"]
