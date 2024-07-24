@@ -352,6 +352,28 @@ class Smi2Ass(AssStyle):
                 except:  # Bad case: '<font size=30>'
                     pass
 
+            # Get converted line
+            contents: str = tmp_line.text
+
+            # Converting place holder to actual character
+            contents = re.sub(
+                r"smi2ass_unicode\(([0-9]+)\)", r"&#\1;", contents
+            )
+
+            # Converting ASCII to special character
+            if sys.version_info.minor < 4:
+                # Since python 3.4+ unescape has been removed from HTMLParser
+                contents = HTMLParser().unescape(contents)  # type: ignore
+            else:
+                contents = html.unescape(contents)
+
+            # Only add converted line when there is content
+            if len(contents.strip()) != 0:
+                tmp_ass_lines.append(
+                    "Dialogue: 0,%s,%s,Default,,0000,0000,0000,,%s\n"
+                    % (track_start, track_end, contents)
+                )
+
         return tmp_ass_lines
 
     def update_file2conv(self, smi_path: str) -> None:
