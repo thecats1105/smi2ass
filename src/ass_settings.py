@@ -31,7 +31,7 @@ class AssStyle:
 
         # Prepare even block of the ass header
         self.ass_event: str = (
-            "[Events]\nFormat: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text"
+            "[Events]\nFormat: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text\n\n"
         )
 
     def __compose_info(self) -> str:
