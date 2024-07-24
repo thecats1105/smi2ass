@@ -270,18 +270,18 @@ class Smi2Ass(AssStyle):
             tmp_line: bs = lines2conv[i][0]
 
             # Setting converted timecode
-            timcode_1: str = lines2conv[i][1]  # Start of subtitle
+            track_start: str = lines2conv[i][1]  # Start of subtitle
 
             # Setting end time code
             try:
-                timecode_2: str = lines2conv[i + 1][1]  # End of subtitles
+                track_end: str = lines2conv[i + 1][1]  # End of subtitles
             except:
                 """
                 Due to how the SMI subtitle is structure, there isn't
                 indication for end time for the line. Thus, adding 1s to the
                 last time code, os it cant convert without error
                 """
-                timecode_2: str = self.__ms2timestamp(lines2conv[i][2] + 1000)
+                track_end: str = self.__ms2timestamp(lines2conv[i][2] + 1000)
 
             # Converting next line (br) tags
             for tmp_br in tmp_line.find_all("br"):
