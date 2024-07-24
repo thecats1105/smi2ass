@@ -3,7 +3,6 @@ import re
 import sys
 from collections import defaultdict
 from operator import itemgetter
-from typing import Dict
 
 if sys.version_info.major >= 3:
     if sys.version_info.minor < 4:
@@ -16,7 +15,8 @@ else:
 # PIP installed modules
 import chardet
 from bs4 import BeautifulSoup as bs
-from bs4 import ResultSet
+
+# from bs4 import ResultSet
 
 # Custom modules
 from ass_settings import AssStyle
@@ -36,7 +36,7 @@ class Smi2Ass(AssStyle):
 
         self.path2smi: str  # Path to SMI file
         self.smi_sgml: str
-        self.smi_sgml_bs: ResultSet
+        self.smi_sgml_bs: bs
         # The value that  hold smi lines by each language. The language code
         # is used as key of the dictionary.
         # Each dictionary key is holding list as [lines, time code in ass]
