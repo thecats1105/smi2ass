@@ -305,7 +305,45 @@ class Smi2Ass(AssStyle):
                 "{\\fscx50}{\\fscy50}&nbsp;%s&nbsp;{\\fscx100}{\\fscy100}",
             )
 
-            p_tags = tmp_line.find_all("p")
+            # Convert font color to ass format
+            for tmp_color in tmp_line.find_all("font"):
+                try:  # Try ro parse color from SMI line
+                    # Parse color from the SMI line
+                    smi_col: str = tmp_color["color"].lower()
+
+                    # Prepare conversion rule to ass in "C" string style
+                    convt_rule: str = "{\\c&H%s&}%s{\\c}"
+                    # Prepare valuable to save line
+                    convt_line: str = ""
+
+                    # Try to get color code in hex, if it is not in hex, the
+                    # search function returns "None"
+                    hexcolor: re.Match[str] | None = re.search(
+                        "[0-9a-fA-F]{6}", smi_col
+                    )
+
+                    # Case when hex color code found
+                    if hexcolor != None:
+                        convt_line = convt_rule % (
+                            rgb2bgr(hexcolor.group(0)),
+                            tmp_color.text,
+                        )
+                    else:  # Case when color name is given (e.g green)
+                        try:  # Try if color name is in CSS3 color BD
+                            convt_line = convt_rule % (
+                                rgb2bgr(self.color2hex(smi_col)),
+                                tmp_color.text,
+                            )
+                        except:  # Failed to convert
+                            convt_line = tmp_color.text
+                            print(f"Failed to convert color name: {smi_col}")
+
+                    # Update with converted line
+                    tmp_color.replaceWith(convt_line)
+                except:  # Bad case: '<font size=30>'
+                    pass
+
+        return tmp_ass_lines
 
     def update_file2conv(self, smi_path: str) -> None:
         """Re-initialing class with new SMI file
