@@ -1,8 +1,17 @@
 # Python built in modules
 import re
+import sys
 from collections import defaultdict
 from operator import itemgetter
 from typing import Dict
+
+if sys.version_info.major >= 3:
+    if sys.version_info.minor < 4:
+        from html.parser import HTMLParser
+    else:
+        import html
+else:
+    raise RuntimeError("Python version 3.x needed")
 
 # PIP installed modules
 import chardet
