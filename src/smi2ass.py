@@ -335,3 +335,18 @@ class Smi2Ass(AssStyle):
 
     def save(self, output_path: str):
         pass
+
+
+def rgb2bgr(rgb: str) -> str:
+    """Converting hex rgb color code to hex bgr color code.
+    based on ASS specs (http://www.tcax.org/docs/ass-specs.htm), font color
+    should given as long integer BGR (blue-green-red)  value.
+
+    Args:
+        rgb (str): Hex color code input
+
+    Returns:
+        str: Converted color code in BGR in hex
+    """
+
+    return rgb[4:6] + rgb[2:4] + rgb[0:2]
