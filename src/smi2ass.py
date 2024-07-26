@@ -15,8 +15,7 @@ else:
 # PIP installed modules
 import chardet
 from bs4 import BeautifulSoup as bs
-
-# from bs4 import ResultSet
+from bs4 import ResultSet
 
 # Custom modules
 from ass_settings import AssStyle
@@ -36,7 +35,7 @@ class Smi2Ass(AssStyle):
 
         self.path2smi: str  # Path to SMI file
         self.smi_sgml: str
-        self.smi_sgml_bs: bs
+        self.smi_sgml_bs: ResultSet
         # The value that  hold smi lines by each language. The language code
         # is used as key of the dictionary.
         # Each dictionary key is holding list as [lines, time code in ass]
@@ -52,22 +51,32 @@ class Smi2Ass(AssStyle):
         if smi_path != "":
             self.__preprocess(smi_path)
 
-    def __preprocess(self, smi_path: str) -> None:
+    def __preprocess(self, smi_file_input: str) -> None:
+        """Initializing class by provided SMI file path.
+        This function read SMI file, clean withe space and parse SMI subtitle
+        with HTML parser.
 
-        self.path2smi = smi_path  # Saving input path
+        Args:
+            smi_path (str): SMI file path
+
+        Raises:
+            IOError: Neither file is not exist or cannot access file
+        """
+
+        self.path2smi = smi_file_input  # Saving input path
 
         # Check if file is accessible. If it is not, program will raise error.
         try:
             # Identify encoding of the file
-            with open(smi_path, "rb") as f:
+            with open(smi_file_input, "rb") as f:
                 f_encoding: str | None = chardet.detect(f.read())["encoding"]
             # Reading SMI file
             with open(
-                smi_path, "r", encoding=f_encoding, errors="replace"
+                smi_file_input, "r", encoding=f_encoding, errors="replace"
             ) as f:
                 self.smi_sgml = f.read()
         except IOError as e:
-            raise IOError(f"Failed to open the file {smi_path}: {e}")
+            raise IOError(f"Failed to open the file {smi_file_input}: {e}")
 
         # Preprocess raw string before parse SMI lines
         self.__convert_whitespace()
@@ -84,18 +93,21 @@ class Smi2Ass(AssStyle):
         self.flag_preprocess = True
 
     def __convert_whitespace(self) -> None:
-        # CRLF, LF or TAB to white space.
+        """Converting CRLF, LF or TAB to white space."""
+
         # Some subtitle uses TAB as space character
         whitespace: list[str] = ["\u000D\u000A", "\u000A", "\u000D"]
 
-        # # Special case for "\t" character
-        # self.smi_sgml.replace("\t", "    ")
+        # TAB to whitespace
+        self.smi_sgml.replace("\t", "    ")
 
         for temp in whitespace:
             self.smi_sgml.replace(temp, " ")
 
     def __convert_ss(self) -> None:
-        # Convert special characters
+        """Converting special characters to ASCII code with defined flag, so
+        it can convert correctly at the end.
+        """
 
         # Defining special characters in unicode
         char_ss: list[str] = [
@@ -142,7 +154,9 @@ class Smi2Ass(AssStyle):
         )
 
     def __add_sync_tag(self) -> None:
-        # Close the <sync> tags to avoid tag recursion
+        """Closing the <sync> tags to avoid tag recursion when it is parses by
+        BeautifulSoup
+        """
 
         # Remove </sync>
         self.smi_sgml = re.sub(r"</ *[Ss][Yy][Nn][Cc] *>", "", self.smi_sgml)
@@ -171,6 +185,15 @@ class Smi2Ass(AssStyle):
         return "%01d:%02d:%02d.%02d" % (hours, minutes, seconds, ms)
 
     def __time_lan(self) -> None:
+        """Form original SMI file, get timecode in millisecond and in case
+        of the subtitle contained multiple language separate out for each
+        language.
+
+        If language is less then 10% compare with largest language, it might
+        be misuse of class name tag on SMI subtile.
+        Thus, in that case this function will be merge language to largest
+        """
+
         tmp_lines: dict[str, list[any]] = defaultdict(list)
         time_code: int  # Prepare valuable to hold time in ms.
 
@@ -217,12 +240,6 @@ class Smi2Ass(AssStyle):
             sorted(tmp_lines.items(), key=lambda item: len(item[1]))
         )
 
-        """
-        check whether proper multiple language subtitle
-        if one language is less than 10% of the other language,
-        it is likely that misuse of class name
-        so combine or get rid of them
-        """
         # Prepare list to hold language code and present of language compare
         # with largest language.
         # line_count structure: [lan code: str, percent: float]
@@ -235,13 +252,6 @@ class Smi2Ass(AssStyle):
                 [tmp_lang, tmp_len, tmp_len / len(tmp_lines[tmp_key])]
             )
 
-        """
-        If there s a language with less than 10%, only two language exist than 
-        combine them.
-        I general, the main language has largest number of files. Thus, for
-        this case, it is merging largest number of language.
-        """
-        # If there is only one language is detected, skip the merging process
         if len(line_count) != 1:
             for tmp in line_count:
                 tmp_key: str = tmp[0]
@@ -256,14 +266,18 @@ class Smi2Ass(AssStyle):
             if len(tmp_lines) != 1:
                 tmp_lines[key] = sorted(value, key=itemgetter(2))
 
-            # Appears need to save millisecond timecode for the very last list
-            # # # Only copy SMI line and ASS timecode
-            # tmp_lines[key] = [tmp[:2] for tmp in value]
-
         # Copy temperate value to the class values
         self.smi_lines = tmp_lines
 
     def __tag_conv(self, tags: list[any], conv_rule: str) -> None:
+        """Converting SMI tags to ASS format based on input rule
+
+        Args:
+            tags (list[any]): SMI tags that is found in line.
+            conv_rule (str): Conversion rule that in C string format. It must
+            only include two string position. (e.g example %s test %s)
+        """
+
         for tmp_tag in tags:
             if len(tmp_tag.text) != 0:
                 tmp_tag.replaceWith(conv_rule % tmp_tag.text)
@@ -392,17 +406,15 @@ class Smi2Ass(AssStyle):
 
         # If class was not initialized print error message.
         if not self.flag_preprocess:
-            print("Initialization  process is not complete")
             print(
-                'Please Initialize class by calling "update_file2conv" method'
+                "Initialization  process is not completed\n"
+                + 'Please Initialize class by calling "update_file2conv" method'
             )
         else:
             for key, value in self.smi_lines.items():
                 self.ass_lines[key] = self.__core(value)
-                # self.ass_lines[key].append(self.ass_header())
-                # self.ass_lines[key] += self.__core(value)
 
-    def save(self, output_path: str):
+    def save(self, output_path: str, output_name: str = ""):
         pass
 
 
