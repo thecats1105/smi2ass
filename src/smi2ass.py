@@ -275,7 +275,7 @@ class Smi2Ass(AssStyle):
         Args:
             tags (list[any]): SMI tags that is found in line.
             conv_rule (str): Conversion rule that in C string format. It must
-            only include two string position. (e.g example %s test %s)
+            only include one string position. (e.g "example %s test")
         """
 
         for tmp_tag in tags:
