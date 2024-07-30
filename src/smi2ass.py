@@ -33,7 +33,7 @@ class Smi2Ass(AssStyle):
         # Initializing parent class
         super().__init__(**kwargs)
 
-        self.path2smi: str  # Path to SMI file
+        self.path2smi: Path  # Path to SMI file
         self.smi_sgml: str
         self.smi_sgml_bs: ResultSet
         # The value that  hold smi lines by each language. The language code
