@@ -63,7 +63,7 @@ class Smi2Ass(AssStyle):
             IOError: Neither file is not exist or cannot access file
         """
 
-        self.path2smi = smi_file_input  # Saving input path
+        self.path2smi = Path(smi_file_input)  # Saving input path
 
         # Check if file is accessible. If it is not, program will raise error.
         try:
@@ -293,11 +293,11 @@ class Smi2Ass(AssStyle):
             tmp_line: bs = lines2conv[i][0]
 
             # Setting converted timecode
-            track_start: str = lines2conv[i][1]  # Start of subtitle
+            track_start: str = lines2conv[i][1]  # Start time of subtitle
 
             # Setting end time code
             try:
-                track_end: str = lines2conv[i + 1][1]  # End of subtitles
+                track_end: str = lines2conv[i + 1][1]  # End time of subtitles
             except:
                 """
                 Due to how the SMI subtitle is structure, there isn't
@@ -352,7 +352,7 @@ class Smi2Ass(AssStyle):
                             tmp_color.text,
                         )
                     else:  # Case when color name is given (e.g green)
-                        try:  # Try if color name is in CSS3 color BD
+                        try:  # Try if color name is in CSS3 color DB
                             convt_line = convt_rule % (
                                 rgb2bgr(self.color2hex(smi_col)),
                                 tmp_color.text,
