@@ -3,6 +3,7 @@ import re
 import sys
 from collections import defaultdict
 from operator import itemgetter
+from pathlib import Path
 
 if sys.version_info.major >= 3:
     if sys.version_info.minor < 4:
@@ -414,8 +415,39 @@ class Smi2Ass(AssStyle):
             for key, value in self.smi_lines.items():
                 self.ass_lines[key] = self.__core(value)
 
-    def save(self, output_path: str, output_name: str = ""):
-        pass
+    def save(self, path2save: str | Path = "") -> None:
+        """Save converted subtitle into the drive. If output path was not
+        provided it will save into where is SMI file located
+
+        Args:
+            path2save (str | Path, optional): Input path. Defaults to "".
+        """
+
+        ass_path: Path  # Preparing value to hole output path
+
+        if type(path2save) == str:
+            if path2save == "":
+                ass_path = self.path2smi.parents[0]
+            else:
+                ass_path = Path(path2save)
+                ass_path.mkdir(exist_ok=True)
+        else:
+            ass_path = path2save  # type: ignore
+            ass_path.mkdir(exist_ok=True)
+
+        # If there is more then one language, on the file name, it will add
+        # what language is in converted  ass file.
+        # e.g test-kor.ass and test-jp.ass
+        lang_keys: list[str] = list(self.ass_lines.keys())
+        if len(lang_keys) == 1:
+            ass_path = ass_path.joinpath(f"{self.path2smi.stem}.ass")
+            save_internal(ass_path, self.ass_lines[lang_keys[0]])
+        else:
+            for tmp_key in lang_keys:
+                ass_path = ass_path.joinpath(
+                    f"{self.path2smi.stem}-{tmp_key.upper()}.ass"
+                )
+                save_internal(ass_path, self.ass_lines[tmp_key])
 
 
 def rgb2bgr(rgb: str) -> str:
@@ -431,3 +463,15 @@ def rgb2bgr(rgb: str) -> str:
     """
 
     return rgb[4:6] + rgb[2:4] + rgb[0:2]
+
+
+def save_internal(save_path: Path, lines: list[str]):
+    """Helper function to combine save operation. Just try to be lazy
+
+    Args:
+        save_path (Path): Output path
+        lines (list[str]): Data that try to write into drive
+    """
+
+    with open(save_path, "w", encoding="utf-8") as f:
+        f.writelines(lines)
