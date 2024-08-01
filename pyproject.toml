@@ -22,10 +22,6 @@ dev_linux = ["nuitka", "patchelf"]
 requires = ["setuptools>=42", "wheel", "nuitka", "toml"]
 build-backend = "nuitka.distutils.Build"
 
-# # Data files are to be handled by setuptools and not Nuitka
-# [tool.setuptools.package-data]
-# some_package = ['data_file.txt']
-
 [tool.nuitka]
 # These are not recommended, but they make it obvious to have effect.
 
@@ -44,7 +40,7 @@ standalone = true # Generate a standalone executable
 onefile = false   # Generate a single-file executable
 
 [tool.scripts]
-smi2ass = "src.main:main"
+smi2ass = "src.__main__:main"
 
 [tool.package]
 include = ["src"]
