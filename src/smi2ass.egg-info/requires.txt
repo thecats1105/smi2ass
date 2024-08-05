@@ -1,9 +1,0 @@
-beautifulsoup4
-chardet
-
-[dev_linux]
-nuitka
-patchelf
-
-[dev_win]
-nuitka
