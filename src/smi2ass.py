@@ -1,17 +1,9 @@
 # Python built in modules
 import re
-import sys
 from collections import defaultdict
 from operator import itemgetter
 from pathlib import Path
-
-if sys.version_info.major >= 3:
-    if sys.version_info.minor < 4:
-        from html.parser import HTMLParser
-    else:
-        import html
-else:
-    raise RuntimeError("Python version 3.x needed")
+import html
 
 # PIP installed modules
 import chardet
@@ -71,6 +63,7 @@ class Smi2Ass(AssStyle):
             # Identify encoding of the file
             with open(smi_file_input, "rb") as f:
                 f_encoding: str | None = chardet.detect(f.read())["encoding"]
+                print(f_encoding)
             # Reading SMI file
             with open(
                 smi_file_input, "r", encoding=f_encoding, errors="replace"
@@ -376,11 +369,7 @@ class Smi2Ass(AssStyle):
             )
 
             # Converting ASCII to special character
-            if sys.version_info.minor < 4:
-                # Since python 3.4+ unescape has been removed from HTMLParser
-                contents = HTMLParser().unescape(contents)  # type: ignore
-            else:
-                contents = html.unescape(contents)
+            contents = html.unescape(contents)
 
             # Only add converted line when there is content
             if len(contents.strip()) != 0:
@@ -400,7 +389,7 @@ class Smi2Ass(AssStyle):
 
         self.__preprocess(smi_path)
 
-    def to_ass(self, smi_path: str = "") -> None:
+    def to_ass(self, smi_path: str = ""):
         # If there is path input then update to new SMI file
         if smi_path != "":
             self.update_file2conv(smi_path)
@@ -414,6 +403,8 @@ class Smi2Ass(AssStyle):
         else:
             for key, value in self.smi_lines.items():
                 self.ass_lines[key] = self.__core(value)
+
+        return self
 
     def save(self, path2save: str | Path = "") -> None:
         """Save converted subtitle into the drive. If output path was not
@@ -473,5 +464,5 @@ def save_internal(save_path: Path, lines: list[str]):
         lines (list[str]): Data that try to write into drive
     """
 
-    with open(save_path, "w", encoding="utf-8") as f:
+    with open(save_path, "w", encoding="utf-16") as f:
         f.writelines(lines)

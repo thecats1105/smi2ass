@@ -169,23 +169,3 @@ def load_setting(fs_name: str, fs_path: str) -> dict[str, any]:
     file2open: str = fs_path + fs_name
     with open(file2open, "r") as f:
         return json.load(f)
-
-
-# Testing code for the class
-def main() -> None:
-    # Testing code for "compose_ass_style"
-    tmp = AssStyle()
-    with open("./tmp_out.ass", "w") as f:
-        f.write(tmp.ass_header())
-
-    tmp.update_font_name("This is Test")
-    tmp.update_font_size(100)
-    tmp.update_title("Test title")
-    tmp.update_res(12358, 1586897)
-    with open("./tmp_out2.ass", "w") as f:
-        f.write(tmp.ass_header())
-
-
-# Some test codes that used during development
-if __name__ == "__main__":
-    main()

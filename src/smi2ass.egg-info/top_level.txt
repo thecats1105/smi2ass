@@ -1,0 +1,5 @@
+__init__
+__main__
+ass_settings
+smi2ass
+test

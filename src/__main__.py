@@ -20,8 +20,14 @@ def cmd_arg() -> dict[str, dict[str, any]]:
 
 def main() -> None:
     arg: dict[str, dict[str, any]] = cmd_arg()
-    print("Hello")
-
+    Smi2Ass("./test_smis/Angel Beats! 01.smi").to_ass().save("./convt_test")
+    Smi2Ass("./test_smis/Angel Beats! 02.smi.smi").to_ass().save("./convt_test")
+    Smi2Ass("./test_smis/Bakemonogatari-01.smi").to_ass().save("./convt_test")
+    Smi2Ass("./test_smis/Durarara!! - 01.smi").to_ass().save("./convt_test")
+    Smi2Ass("./test_smis/Durarara!! - 02.smi").to_ass().save("./convt_test")
+    Smi2Ass("./test_smis/Psycho-Pass - S01E15.smi").to_ass().save("./convt_test")
+    Smi2Ass("./test_smis/경계의 저편 BD 01화.smi").to_ass().save("./convt_test")
+    Smi2Ass("./test_smis/경계의 저편 BD 02화.smi").to_ass().save("./convt_test")
 
 if __name__ == "__main__":
     main()
