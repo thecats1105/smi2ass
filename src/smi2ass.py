@@ -15,7 +15,6 @@ from bs4 import ResultSet
 from ass_settings import AssStyle
 
 
-class Smi2Ass(AssStyle):
 class smi2ass(AssStyle):
     def __init__(self, smi_path: str = "", **kwargs) -> None:
         """Class constructor, this class only initializes when SMI file path
@@ -59,6 +58,9 @@ class smi2ass(AssStyle):
         """
 
         self.path2smi = Path(smi_file_input)  # Saving input path
+
+        # Printing which file is currently converting
+        print(f"\nConverting... \n{self.path2smi}")
 
         # Check if file is accessible. If it is not, program will raise error.
         try:
@@ -205,10 +207,10 @@ class smi2ass(AssStyle):
                 time_code = int(lines["start"])
                 if time_code < 0:
                     time_code = -1
-                    print(f"Negative time code: {lines}")
+                    print(f"Negative time code: \n\n{lines}\n")
             except:
                 time_code = -1
-                print(f"Failed to extract time code: {lines}")
+                print(f"Failed to extract time code: \n\n{lines}\n")
 
             # Language separation is depends on p class tag (<P Class= >)
             # Get language name from <P Class= > tag
@@ -455,6 +457,9 @@ class smi2ass(AssStyle):
                     f"{self.path2smi.stem}-{tmp_key.upper()}.ass"
                 )
                 save_internal(ass_path, self.ass_lines[tmp_key])
+
+        # Added message to notify where file has been saved
+        print(f"Converted file has been saved as... \n{ass_path}")
 
 
 def rgb2bgr(rgb: str) -> str:
