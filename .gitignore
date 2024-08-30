@@ -4,6 +4,7 @@
 __pycache__
 .vscode
 .venv
+*.egg-info
 
 # Temperate ignore
 *.ps1
