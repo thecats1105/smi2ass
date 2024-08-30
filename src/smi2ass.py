@@ -1,5 +1,6 @@
 # Python built in modules
 import re
+from typing import Self
 from collections import defaultdict
 from operator import itemgetter
 from pathlib import Path
@@ -380,16 +381,31 @@ class smi2ass(AssStyle):
 
         return tmp_ass_lines
 
-    def update_file2conv(self, smi_path: str) -> None:
+    def update_file2conv(self, smi_path: str) -> Self:
         """Re-initialing class with new SMI file
 
         Args:
             smi_path (str): SMI file path
+
+        Returns:
+            Self: Returning itself
         """
 
         self.__preprocess(smi_path)
 
-    def to_ass(self, smi_path: str = "") -> None:
+        return self
+
+    def to_ass(self, smi_path: str = "") -> Self:
+        """Converting SMI subtitle to ASS
+
+        Args:
+            smi_path (str, optional): In case when need to update file to
+            convert. Defaults to "".
+
+        Returns:
+            Self: Returning itself
+        """
+
         # If there is path input then update to new SMI file
         if smi_path != "":
             self.update_file2conv(smi_path)
@@ -403,6 +419,8 @@ class smi2ass(AssStyle):
         else:
             for key, value in self.smi_lines.items():
                 self.ass_lines[key] = self.__core(value)
+
+        return self
 
     def save(self, path2save: str | Path = "") -> None:
         """Save converted subtitle into the drive. If output path was not
