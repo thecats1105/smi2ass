@@ -1,4 +1,4 @@
 from . import ass_settings
 from .ass_settings import AssStyle
-from . import Smi2Ass
-from .smi2ass import Smi2Ass
+from . import smi2ass
+from .smi2ass import smi2ass

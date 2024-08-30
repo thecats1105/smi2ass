@@ -15,6 +15,7 @@ from ass_settings import AssStyle
 
 
 class Smi2Ass(AssStyle):
+class smi2ass(AssStyle):
     def __init__(self, smi_path: str = "", **kwargs) -> None:
         """Class constructor, this class only initializes when SMI file path
         is given as input variable

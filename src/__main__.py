@@ -3,6 +3,7 @@ import argparse
 
 # Custom made modules
 from smi2ass import Smi2Ass
+from smi2ass import smi2ass
 
 
 def cmd_arg() -> dict[str, dict[str, any]]:
