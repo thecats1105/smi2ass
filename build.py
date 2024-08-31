@@ -1,6 +1,8 @@
 import os
 import subprocess
 import sys
+from pathlib import Path
+import shutil
 
 
 def is_venv() -> bool:
@@ -45,6 +47,7 @@ def build_with_nuitka(script_name, output_dir, ouput_name) -> None:
         "--follow-imports",
         "--standalone",
         "--onefile",
+        "--remove-output",
         f"--output-dir={output_dir}",
         f"--output-filename={ouput_name}",
         script_name,
@@ -70,6 +73,13 @@ def main() -> None:
     output_dir: str = "./build"
     ouput_name: str = "smi2ass"
     build_with_nuitka(script_name, output_dir, ouput_name)
+
+    # Check if setting file exist, if it is delete them
+    if Path(f"{output_dir}/setting").exists():
+        Path(f"{output_dir}/setting").unlink()
+
+    # Copy setting folder into build folder
+    shutil.copytree(Path("./setting"), Path(f"{output_dir}/setting"))
 
 
 if __name__ == "__main__":
