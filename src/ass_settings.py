@@ -126,6 +126,10 @@ class AssStyle:
 
         self.ass_style["ScriptInfo"]["Title"] = title
 
+    @property
+    def title(self) -> str:
+        return self.ass_style["ScriptInfo"]["Title"]
+
     def update_res(self, res_x: int, res_y: int) -> None:
         """To update resolution information of the video. It is default to
         FullHD (1980 x 1080) resolution in the json file
@@ -138,6 +142,13 @@ class AssStyle:
         self.ass_style["ScriptInfo"]["PlayResX"] = res_x
         self.ass_style["ScriptInfo"]["PlayResY"] = res_y
 
+    @property
+    def resolution(self) -> list[int]:
+        return [
+            self.ass_style["ScriptInfo"]["PlayResX"],
+            self.ass_style["ScriptInfo"]["PlayResY"],
+        ]
+
     def update_font_name(self, name: str) -> None:
         """Updating font of subtitle
 
@@ -147,6 +158,10 @@ class AssStyle:
 
         self.ass_style["style"]["Fontname"] = name
 
+    @property
+    def font_name(self) -> str:
+        return self.ass_style["style"]["Fontname"]
+
     def update_font_size(self, size: int | float) -> None:
         """Updating font size of subtitle
 
@@ -155,6 +170,10 @@ class AssStyle:
         """
 
         self.ass_style["style"]["Fontsize"] = size
+
+    @property
+    def font_size(self) -> int | float:
+        return self.ass_style["style"]["Fontsize"]
 
     def ass_header(self) -> str:
         """Composing ASS header that contains ASS style settings
