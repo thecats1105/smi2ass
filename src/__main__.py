@@ -36,8 +36,10 @@ def cmd_arg():
         help="Tile of the video file for subtitle header",
     )
 
+    parser.add_argument("-f", "--font", type=str, help="Font of the subtitle")
+
     parser.add_argument(
-        "-f", "--font_size", type=float, help="Font size of subtitle"
+        "-s", "--font_size", type=float, help="Font size of subtitle"
     )
 
     parser.add_argument(
@@ -54,12 +56,50 @@ def cmd_arg():
         help="Vertical resolution of the video",
     )
 
-    return parser.parse_args()
+    return parser
+
+
+def update_style(obj: smi2ass, args: argparse.Namespace) -> None:
+    """Updating ASS header style based on the user inputs
+
+    Args:
+        obj (smi2ass): smi2ass class object, if I'm right since this is objec,
+        it will be pass bt reference
+        args (argparse.Namespace): Input arguments
+    """
+
+    if args.title != None:  # Update title
+        obj.update_title(args.title)
+
+    if args.font != None:  # Update font
+        obj.update_font_name(args.font)
+
+    if args.font_size != None:  # update font size
+        obj.update_font_size(args.font_size)
+
+    # Updating resolution
+    if (args.resolution_x != None) and (args.resolution_y != None):
+        obj.update_res(res_x=args.resolution_x, res_y=args.resolution_y)
+    elif (args.resolution_x != None and args.resolution_y == None) or (
+        args.resolution_x == None and args.resolution_y != None
+    ):
+        msg_str: str
+        if args.resolution_x != None:
+            msg_str = "resolution_x"
+        else:
+            msg_str = "resolution_y"
+        print(
+            f'Cannot update resolution, you only entered "{msg_str}."'
+            + "Both resolutions are needed"
+        )
 
 
 def main() -> None:
-    obj_smi2ass = smi2ass()
-    args: argparse.Namespace = cmd_arg()
+    parser: argparse.ArgumentParser = cmd_arg()
+    args: argparse.Namespace = parser.parse_args()
+
+    obj_smi2ass = smi2ass()  # Crete object for smi2ass
+    update_style(obj_smi2ass, args)
 
     for tmp_file_name in args.file_name:
         obj_smi2ass.to_ass(tmp_file_name).save(args.output_dir)
