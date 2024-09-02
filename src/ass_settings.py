@@ -1,12 +1,15 @@
 # Python builtin modules
+import os
+import sys
 import json
+from pathlib import Path
 
 # PIP installed modules
 import webcolors
 
 
 class AssStyle:
-    def __init__(self, setting_path: str = "./setting/") -> None:
+    def __init__(self, setting_path: str = "") -> None:
         """Reads setting JSON file form local drive and compose into ASS
         header block. Also, reads language code and color code setting from
         JSON file from local drive that can convert SMI to ASS style code.
@@ -17,16 +20,25 @@ class AssStyle:
         """
 
         # Save input path
-        self.root_path: str = setting_path
+        self.setting_path: Path
+        if setting_path == "":
+            # Get executable root directory, in case when compiled else just
+            # get project directory
+            base_dir: Path = (
+                Path(sys.argv[0]).parent if is_nuitka() else Path.cwd()
+            )
+            self.setting_path = base_dir.joinpath("setting")
+        else:
+            self.setting_path = Path(setting_path)
 
         # Reading language code
         self.lan_code: dict[str, str] = load_setting(
-            "lan_code.json", self.root_path
+            "lan_code.json", self.setting_path
         )
 
         # Reading ass style information
         self.ass_style: dict[str, any] = load_setting(
-            "ass_styles.json", self.root_path
+            "ass_styles.json", self.setting_path
         )
 
         # Prepare even block of the ass header
@@ -154,7 +166,7 @@ class AssStyle:
         return self.__compose_info() + self.__compose_styles() + self.ass_event
 
 
-def load_setting(fs_name: str, fs_path: str) -> dict[str, any]:
+def load_setting(fs_name: str, fs_path: Path | str) -> dict[str, any]:
     """Reading json file from file
 
     Args:
@@ -166,6 +178,23 @@ def load_setting(fs_name: str, fs_path: str) -> dict[str, any]:
     """
 
     # Setting full path of JSON file to open
-    file2open: str = fs_path + fs_name
+    if isinstance(fs_path, Path):
+        file2open: Path | str = fs_path.joinpath(fs_name)  # type: ignore
+    else:
+        file2open: Path | str = fs_path + fs_name  # type: ignore
+
     with open(file2open, "r") as f:
         return json.load(f)
+
+
+def is_nuitka() -> bool:
+    """Check if the script is compiled with Nuitka
+
+    Returns:
+        bool: True, if compiled with Nuitka
+    """
+
+    flag1: bool = "__compiled__" in globals()
+    flag2: bool = "NUITKA_ONEFILE_PARENT" in os.environ
+
+    return flag1 or flag2
