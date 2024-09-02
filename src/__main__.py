@@ -59,7 +59,7 @@ def cmd_arg():
 
 def main() -> None:
     obj_smi2ass = smi2ass()
-    args = cmd_arg()
+    args: argparse.Namespace = cmd_arg()
 
     for tmp_file_name in args.file_name:
         obj_smi2ass.to_ass(tmp_file_name).save(args.output_dir)

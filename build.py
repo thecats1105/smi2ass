@@ -6,7 +6,7 @@ import shutil
 import subprocess
 
 # Global variable, flag to check if the build script is running under windows
-IS_WIN: bool = True if os.name == "nt" else False
+IS_WIN: bool = os.name == "nt"
 
 
 def is_venv() -> bool:
@@ -15,7 +15,6 @@ def is_venv() -> bool:
     Returns:
         bool: True if it running inside of the virtual environment
     """
-
     return hasattr(sys, "real_prefix") or (
         hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix
     )
@@ -35,9 +34,11 @@ def activate_venv(venv_path) -> None:
     activate_script = Path(venv_path)
 
     if IS_WIN:
-        activate_script.joinpath("Scripts", "Activate.ps1")
+        activate_script = activate_script.joinpath(
+            "Scripts", "activate_this.py"
+        )
     else:
-        activate_script.joinpath("bin", "activate")
+        activate_script = activate_script.joinpath("bin", "activate_this.py")
 
     if not activate_script.exists():
         raise FileNotFoundError(
@@ -68,6 +69,7 @@ def build_with_nuitka(script_name, output_dir, output_name) -> None:
         "--standalone",
         "--onefile",
         "--remove-output",
+        "--jobs=8",
         f"--output-dir={output_dir}",
         f"--output-filename={output_name}",
         script_name,
@@ -88,17 +90,18 @@ def copy_setting_dir(output_dir) -> None:
         output_dir (str): The output directory where excitable file
     """
 
-    if Path(f"{output_dir}/setting").exists():
-        shutil.rmtree(Path(f"{output_dir}/setting"))
+    settings_dir = Path(f"{output_dir}/setting")
+    if settings_dir.exists():
+        shutil.rmtree(settings_dir)
 
-    shutil.copytree(Path("./setting"), Path(f"{output_dir}/setting"))
+    shutil.copytree(Path("./setting"), settings_dir)
 
 
 def test_build_prog(out_dir, output_name) -> None:
     test_smis_dir = "./test_smis"
 
-    test_command = [
-        f"{smi2ass_prg}" + (".exe" if IS_WIN else ""),
+    test_command: list[str] = [
+        f"{out_dir}/{output_name}" + (".exe" if IS_WIN else ""),
         f"{test_smis_dir}/Angel Beats! 01.smi",
         f"{test_smis_dir}/Angel Beats! 02.smi",
         f"{test_smis_dir}/Bakemonogatari-01.smi",
@@ -109,11 +112,10 @@ def test_build_prog(out_dir, output_name) -> None:
         f"{test_smis_dir}/경계의 저편 BD 02화.smi",
     ]
 
-    print(test_command)
     try:
         subprocess.run(test_command, check=True)
     except subprocess.CalledProcessError as e:
-        print(f"Failed to run builded program. Error {e}")
+        print(f"Failed to run built program. Error {e}")
         exit(2)
 
 
@@ -133,10 +135,10 @@ def main() -> None:
     # Let's build the program
     build_with_nuitka(script_name, output_dir, output_name)
 
-    # Let's copy json file for the ass header
+    # Let's copy json files for the ass header
     copy_setting_dir(output_dir)
 
-    # Let's test program that build
+    # Let's test the program that was built
     test_build_prog(output_dir, output_name)
 
 
