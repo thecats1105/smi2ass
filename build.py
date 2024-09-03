@@ -34,11 +34,9 @@ def activate_venv(venv_path) -> None:
     activate_script = Path(venv_path)
 
     if IS_WIN:
-        activate_script = activate_script.joinpath(
-            "Scripts", "activate_this.py"
-        )
+        activate_script = activate_script.joinpath("Scripts", "Activate.ps1")
     else:
-        activate_script = activate_script.joinpath("bin", "activate_this.py")
+        activate_script = activate_script.joinpath("bin", "activate")
 
     if not activate_script.exists():
         raise FileNotFoundError(
@@ -98,10 +96,39 @@ def copy_setting_dir(output_dir) -> None:
 
 
 def test_build_prog(out_dir, output_name) -> None:
-    test_smis_dir = "./test_smis"
+    test_smis_dir: str = "./test_smis"
+    exe_name: str = f"{out_dir}/{output_name}" + (".exe" if IS_WIN else "")
+    test_command: list[str]
 
+    # Single file with font name & size change & output directory
+    test_command = [
+        exe_name,
+        "-f TEST_FONT_NAME",
+        "-s 696969",
+        "-o ./out_singe_test",
+        f"{test_smis_dir}/Angel Beats! 01.smi",
+    ]
+
+    print(
+        "\nTesting build - Single file w/ font name & size & output directory"
+    )
+    test_build_internal(test_command)
+
+    # Multiple file test with font name & output directory
+    test_command = [
+        exe_name,
+        "-f TEST_FONT_NAME",
+        "-o ./out_multi_test",
+        f"{test_smis_dir}/Angel Beats! 02.smi",
+        f"{test_smis_dir}/Bakemonogatari-01.smi",
+    ]
+
+    print("\nTesting build - Multiple files w/ font name & output directory")
+    test_build_internal(test_command)
+
+    # Jut multiple file
     test_command: list[str] = [
-        f"{out_dir}/{output_name}" + (".exe" if IS_WIN else ""),
+        exe_name,
         f"{test_smis_dir}/Angel Beats! 01.smi",
         f"{test_smis_dir}/Angel Beats! 02.smi",
         f"{test_smis_dir}/Bakemonogatari-01.smi",
@@ -112,8 +139,13 @@ def test_build_prog(out_dir, output_name) -> None:
         f"{test_smis_dir}/경계의 저편 BD 02화.smi",
     ]
 
+    print("\nTesting build - Just multiple files")
+    test_build_internal(test_command)
+
+
+def test_build_internal(command) -> None:
     try:
-        subprocess.run(test_command, check=True)
+        subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
         print(f"Failed to run built program. Error {e}")
         exit(2)
@@ -122,7 +154,7 @@ def test_build_prog(out_dir, output_name) -> None:
 def main() -> None:
     # Ensure we are running in a virtual environment
     if not is_venv():
-        venv_path = ".venv"  # Path to your virtual environment
+        venv_path = "./.venv"  # Path to your virtual environment
         print(
             f"\nNot running inside a virtual environment. Activating {venv_path}...\n"
         )
