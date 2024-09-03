@@ -14,7 +14,7 @@ def cmd_arg():
 
     parser.add_argument(
         "file_name",
-        metavar="F",
+        metavar="File_Name",
         type=str,
         nargs="+",
         help="SMI file name to  be processed",
@@ -39,7 +39,7 @@ def cmd_arg():
     parser.add_argument("-f", "--font", type=str, help="Font of the subtitle")
 
     parser.add_argument(
-        "-s", "--font_size", type=float, help="Font size of subtitle"
+        "-s", "--font_size", type=int, help="Font size of subtitle"
     )
 
     parser.add_argument(
@@ -68,10 +68,22 @@ def update_style(obj: smi2ass, args: argparse.Namespace) -> None:
         args (argparse.Namespace): Input arguments
     """
 
+    # It removes first character of the string
+    remove_first_char = lambda s: s[:0] + "" + s[1:]
+
+    # In case when there is white space in the front of string, it causes when
+    # program is making new directory for converted output. Thus, it need to
+    # remove it
+    if args.output_dir[0] == " ":
+        args.output_dir = remove_first_char(args.output_dir)
+
     if args.title != None:  # Update title
         obj.update_title(args.title)
 
     if args.font != None:  # Update font
+        # To prevent error when it is playing on the video player
+        if args.font[0] == " ":
+            args.font = remove_first_char(args.font)
         obj.update_font_name(args.font)
 
     if args.font_size != None:  # update font size
@@ -98,7 +110,7 @@ def main() -> None:
     parser: argparse.ArgumentParser = cmd_arg()
     args: argparse.Namespace = parser.parse_args()
 
-    obj_smi2ass = smi2ass()  # Crete object for smi2ass
+    obj_smi2ass = smi2ass()  # Create object for smi2ass
     update_style(obj_smi2ass, args)
 
     for tmp_file_name in args.file_name:
