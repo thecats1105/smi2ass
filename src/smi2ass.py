@@ -41,13 +41,17 @@ class smi2ass(AssStyle):
         # Flag initialization process is complete before converting to ASS
         self.flag_preprocess: bool = False
 
+        # Setting time offset from original file
+        self.flag_time_offset: bool = False
+        self.time_offset: int = 0
+
         # Only initialize the class when SMI file path is provided
         if smi_path != "":
             self.__preprocess(smi_path)
 
     def __preprocess(self, smi_file_input: str) -> None:
         """Initializing class by provided SMI file path.
-        This function read SMI file, clean withe space and parse SMI subtitle
+        This function read SMI file, clean white space and parse SMI subtitle
         with HTML parser.
 
         Args:
@@ -95,11 +99,12 @@ class smi2ass(AssStyle):
         # Some subtitle uses TAB as space character
         whitespace: list[str] = ["\u000D\u000A", "\u000A", "\u000D"]
 
-        # TAB to whitespace
-        self.smi_sgml.replace("\t", "    ")
-
+        # CRLF, LF to a whitespace
         for temp in whitespace:
             self.smi_sgml.replace(temp, " ")
+
+        # TAB to whitespace
+        self.smi_sgml.replace("\t", "    ")
 
     def __convert_ss(self) -> None:
         """Converting special characters to ASCII code with defined flag, so
@@ -126,6 +131,7 @@ class smi2ass(AssStyle):
             "\u205F",
             "\u3000",
         ]
+
         # Replace special space characters so that Beautifulsoup
         # can't remove them
         for tmp_ss in char_ss:
@@ -138,6 +144,7 @@ class smi2ass(AssStyle):
         self.smi_sgml = re.sub(r"> +<", ">smi2ass_unicode(32)<", self.smi_sgml)
         self.smi_sgml = re.sub(r"> +", ">smi2ass_unicode(32)", self.smi_sgml)
         self.smi_sgml = re.sub(r" +<", "smi2ass_unicode(32)<", self.smi_sgml)
+
         # but not <rt>
         self.smi_sgml = re.sub(
             r"< *[Rr][Tt] *>(smi2ass_unicode\([0-9]+\))+",
@@ -196,6 +203,17 @@ class smi2ass(AssStyle):
 
         # Set for timecode and separate out each language
         for lines in self.smi_sgml_bs:
+
+            # Language separation is depends on p class tag (<P Class= >)
+            # Get language name from <P Class= > tag
+            try:
+                lang_tag: list[str] = lines.find("p")["class"]
+            except:  # Bad case: <SYNC Start=7630><P>
+                # If no p class, it will set to unknown language
+                lang_tag = ["UNKNOWNCC"]
+                print(f"Failed to extract language class: {lines}")
+                print('Language has been set to "UNKNOWNCC"')
+
             # for index, lines in enumerate(self.smi_sgml_bs):
             # Get timecode from <SYNC Start= > tag
             # If case when there is error, the time_code is set to "-1"
@@ -212,15 +230,9 @@ class smi2ass(AssStyle):
                 time_code = -1
                 print(f"Failed to extract time code: \n\n{lines}\n")
 
-            # Language separation is depends on p class tag (<P Class= >)
-            # Get language name from <P Class= > tag
-            try:
-                lang_tag: list[str] = lines.find("p")["class"]
-            except:  # Bad case: <SYNC Start=7630><P>
-                # If no p class, it will set to unknown language
-                lang_tag = ["UNKNOWNCC"]
-                print(f"Failed to extract language class: {lines}")
-                print('Language has been set to "UNKNOWNCC"')
+            # Adjust subtitle timecode based on the offset input
+            if self.flag_time_offset:
+                time_code += self.time_offset
 
             # The key of the dictionary is language code in ass.
             # temporarily hols smi line data in to tmp_lines, and data
@@ -400,6 +412,10 @@ class smi2ass(AssStyle):
 
         return self
 
+    def set_time_offset(self, offset: int) -> None:
+        self.flag_time_offset = True
+        self.time_offset = offset
+
     def to_ass(self, smi_path: str = "") -> Self:
         """Converting SMI subtitle to ASS
 
@@ -442,10 +458,10 @@ class smi2ass(AssStyle):
                 ass_path = self.path2smi.parents[0]
             else:
                 ass_path = Path(path2save)
-                ass_path.mkdir(exist_ok=True)
+                ass_path.mkdir(parents=True, exist_ok=True)
         else:
             ass_path = path2save  # type: ignore
-            ass_path.mkdir(exist_ok=True)
+            ass_path.mkdir(parents=True, exist_ok=True)
 
         # If there is more then one language, on the file name, it will add
         # what language is in converted  ass file.

@@ -6,7 +6,7 @@ from pathlib import Path
 from smi2ass import smi2ass
 
 
-def cmd_arg():
+def cmd_arg() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="smi2ass",
         description="Converting SAMI (SMI) into Advanced SubStation Alpha (ASS) subtitle",
@@ -54,6 +54,18 @@ def cmd_arg():
         "--resolution_y",
         type=int,
         help="Vertical resolution of the video",
+    )
+
+    parser.add_argument(
+        "--add_time",
+        type=int,
+        help="Time in millisecond to add on subtitle",
+    )
+
+    parser.add_argument(
+        "--sub_time",
+        type=int,
+        help="Time in millisecond to subtract on subtitle",
     )
 
     return parser
@@ -112,6 +124,17 @@ def main() -> None:
 
     obj_smi2ass = smi2ass()  # Create object for smi2ass
     update_style(obj_smi2ass, args)
+
+    # Check if user gave time offset
+    if args.add_time != None or args.sub_time != None:
+        time_offset: int
+        if args.add_time != None:
+            time_offset = args.add_time
+        else:
+            time_offset = args.sub_time * -1
+
+        # Update time offset
+        obj_smi2ass.set_time_offset(time_offset)
 
     for tmp_file_name in args.file_name:
         obj_smi2ass.to_ass(tmp_file_name).save(args.output_dir)
