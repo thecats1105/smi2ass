@@ -105,7 +105,7 @@ def test_build_prog(out_dir, output_name) -> None:
         exe_name,
         "-f TEST_FONT_NAME",
         "-s 696969",
-        "-o ./out_singe_test",
+        "-o ./test_out/out_singe_test",
         f"{test_smis_dir}/Angel Beats! 01.smi",
     ]
 
@@ -118,7 +118,7 @@ def test_build_prog(out_dir, output_name) -> None:
     test_command = [
         exe_name,
         "-f TEST_FONT_NAME",
-        "-o ./out_multi_test",
+        "-o ./test_out/out_multi_test",
         f"{test_smis_dir}/Angel Beats! 02.smi",
         f"{test_smis_dir}/Bakemonogatari-01.smi",
     ]
