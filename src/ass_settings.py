@@ -87,10 +87,14 @@ class AssStyle:
         tmp_style: str = "Style: "
 
         # Instead of deleting used keys, just skip it
-        for tmp in tmp_dict.keys():
-            if tmp != "Head":
-                tmp_format += f"{tmp}, "
-                tmp_style += f"{tmp_dict[tmp]},"
+        for tmp in list(tmp_dict.keys())[1:]:
+            # if tmp != "Head":
+            tmp_format += f"{tmp}, "
+            tmp_style += f"{tmp_dict[tmp]},"
+
+        # Remove "," to avoid when feed into video
+        tmp_format = tmp_format[:-2]
+        tmp_style = tmp_style[:-1]
 
         return f"{tmp_head}\n{tmp_format}\n{tmp_style}\n\n"
 
