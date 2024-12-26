@@ -305,7 +305,7 @@ class smi2ass(AssStyle):
 
             # Converting next line (br) tags
             for tmp_br in tmp_line.find_all("br"):
-                tmp_br.replaceWith("\\n")
+                tmp_br.replaceWith("\\N")
 
             # Convert bold (b) tags
             self.__tag_conv(tmp_line.find_all("b"), "{\\b1}%s{\\b0}")
@@ -373,6 +373,9 @@ class smi2ass(AssStyle):
 
             # Converting ASCII to special character
             contents = html.unescape(contents)
+
+            # Removes next line character to avoid error when it sets loading
+            contents = re.sub("\n", "", contents, len(contents) - 1)
 
             # Only add converted line when there is content
             if len(contents.strip()) != 0:
