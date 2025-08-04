@@ -152,14 +152,6 @@ def test_build_internal(command) -> None:
 
 
 def main() -> None:
-    # Ensure we are running in a virtual environment
-    if not is_venv():
-        venv_path = "./.venv"  # Path to your virtual environment
-        print(
-            f"\nNot running inside a virtual environment. Activating {venv_path}...\n"
-        )
-        activate_venv(venv_path)
-
     script_name: str = "./src/__main__.py"
     output_dir: str = "./build"
     output_name: str = "smi2ass"
