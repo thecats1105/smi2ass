@@ -168,6 +168,8 @@ class smi2ass(AssStyle):
         self.smi_sgml = re.sub(
             r"< *[Ss][Yy][Nn][Cc] +", "</sync><sync ", self.smi_sgml
         )
+        # Fix malformed font tags
+        self.smi_sgml = re.sub(r'< ="([^"]*)"', r'<font face="\1"', self.smi_sgml)
 
     def __ms2timestamp(self, ms: int) -> str:
         """Converting millisecond to h:mm:ss.ff time format
@@ -338,42 +340,39 @@ class smi2ass(AssStyle):
             )
 
             # Convert font color to ass format
-            for tmp_color in tmp_line.find_all("font"):
-                try:  # Try ro parse color from SMI line
-                    # Parse color from the SMI line
-                    smi_col: str = tmp_color["color"].lower()
+            for tmp_font in tmp_line.find_all("font"):
+                applied_tags = []
+                closing_tags = []
 
-                    # Prepare conversion rule to ass in "C" string style
-                    convt_rule: str = "{\\c&H%s&}%s{\\c}"
-                    # Prepare valuable to save line
-                    convt_line: str = ""
-
-                    # Try to get color code in hex, if it is not in hex, the
-                    # search function returns "None"
-                    hexcolor: re.Match[str] | None = re.search(
-                        "[0-9a-fA-F]{6}", smi_col
-                    )
-
-                    # Case when hex color code found
-                    if hexcolor != None:
-                        convt_line = convt_rule % (
-                            rgb2bgr(hexcolor.group(0)),
-                            tmp_color.text,
-                        )
-                    else:  # Case when color name is given (e.g green)
-                        try:  # Try if color name is in CSS3 color DB
-                            convt_line = convt_rule % (
-                                rgb2bgr(self.color2hex(smi_col)),
-                                tmp_color.text,
-                            )
-                        except:  # Failed to convert
-                            convt_line = tmp_color.text
+                # Handle font color
+                if "color" in tmp_font.attrs:
+                    smi_col = tmp_font["color"].lower()
+                    hexcolor = re.search("[0-9a-fA-F]{6}", smi_col)
+                    bgr_color = None
+                    if hexcolor:
+                        bgr_color = rgb2bgr(hexcolor.group(0))
+                    else:
+                        try:
+                            bgr_color = rgb2bgr(self.color2hex(smi_col))
+                        except ValueError:
                             print(f"Failed to convert color name: {smi_col}")
 
-                    # Update with converted line
-                    tmp_color.replaceWith(convt_line)
-                except:  # Bad case: '<font size=30>'
-                    pass
+                    if bgr_color:
+                        applied_tags.append(f"\\c&H{bgr_color}&")
+                        closing_tags.insert(0, "\\c")
+
+                # Handle font face
+                if "face" in tmp_font.attrs:
+                    applied_tags.append(f"\\fn{tmp_font['face']}")
+
+                if applied_tags:
+                    opening = "{" + "".join(applied_tags) + "}"
+                    closing = "{" + "".join(closing_tags) + "}" if closing_tags else ""
+                    replacement = f"{opening}{tmp_font.text}{closing}"
+                    tmp_font.replaceWith(replacement)
+                else:
+                    # In case of no convertible attributes, just get the text
+                    tmp_font.replaceWith(tmp_font.text)
 
             # Get converted line
             contents: str = tmp_line.text
